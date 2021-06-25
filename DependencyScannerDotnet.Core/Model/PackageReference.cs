@@ -12,7 +12,7 @@ namespace DependencyScannerDotnet.Core.Model
 
         public string Version { get; set; }
 
-        public List<PackageReference> PackageReferences { get; init; } = new();
+        public List<PackageReference> PackageReferences { get; set; } = new();
 
         public PackageReference() { }
     }

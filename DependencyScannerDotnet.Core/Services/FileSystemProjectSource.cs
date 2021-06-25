@@ -55,7 +55,9 @@ namespace DependencyScannerDotnet.Core.Services
 
             ReplaceReferencedProjects(projectReferences);
 
-            return projectReferences;
+            return projectReferences
+                .OrderBy(projectReference => projectReference.ProjectName.ToLower())
+                .ToList();
         }
 
         private async Task<ProjectReference> ParseProjectFileAsync(FileInfo projectFileInfo)

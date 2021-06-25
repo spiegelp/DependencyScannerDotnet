@@ -16,9 +16,9 @@ namespace DependencyScannerDotnet.Core.Model
 
         public List<string> Targets { get; init; } = new();
 
-        public List<ProjectReference> ProjectReferences { get; init; } = new();
+        public List<ProjectReference> ProjectReferences { get; set; } = new();
 
-        public List<PackageReference> PackageReferences { get; init; } = new();
+        public List<PackageReference> PackageReferences { get; set; } = new();
 
         public ProjectReference() { }
     }

@@ -16,7 +16,7 @@ namespace DependencyScannerDotnet.Core.Services
 
         public abstract Task<List<ProjectReference>> LoadProjectFilesAsync();
 
-        public ProjectReference ParseProjectFile(byte[] fileBytes)
+        protected ProjectReference ParseProjectFile(byte[] fileBytes)
         {
             ProjectReference projectReference = new();
 
