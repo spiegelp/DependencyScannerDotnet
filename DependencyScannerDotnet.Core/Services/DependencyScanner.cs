@@ -26,7 +26,7 @@ namespace DependencyScannerDotnet.Core.Services
             m_targetFrameworkMappingService = targetFrameworkMappingService;
         }
 
-        public async Task<List<ProjectReference>> ScanDependenciesAsync(int maxDepth = 64)
+        public async Task<ScanResult> ScanDependenciesAsync(int maxDepth = 64)
         {
             List<ProjectReference> projectReferences = await m_projectSource.LoadProjectFilesAsync().ConfigureAwait(false);
 
@@ -53,7 +53,7 @@ namespace DependencyScannerDotnet.Core.Services
                 }
             }
 
-            return projectReferences;
+            return new(projectReferences);
         }
 
         private async Task ScanDependenciesAsync(PackageReference packageReference, SourceCacheContext cache, SourceRepository repository, NuGetFramework framework, int depth, int maxDepth, CancellationToken cancellationToken)

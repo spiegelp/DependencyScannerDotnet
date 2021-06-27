@@ -9,6 +9,6 @@ namespace DependencyScannerDotnet.Core.Services
 {
     public interface IDependencyScanner
     {
-        Task<List<ProjectReference>> ScanDependenciesAsync(int maxDepth = 64);
+        Task<ScanResult> ScanDependenciesAsync(int maxDepth = 64);
     }
 }

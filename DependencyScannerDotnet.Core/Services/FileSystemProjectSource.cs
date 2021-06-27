@@ -55,6 +55,23 @@ namespace DependencyScannerDotnet.Core.Services
 
             ReplaceReferencedProjects(projectReferences);
 
+            projectReferences.ForEach(projectReference =>
+            {
+                if (projectReference.ProjectReferences != null && projectReference.ProjectReferences.Any())
+                {
+                    projectReference.ProjectReferences = projectReference.ProjectReferences
+                        .OrderBy(x => x.ProjectName.ToLower())
+                        .ToList();
+                }
+
+                if (projectReference.PackageReferences != null && projectReference.PackageReferences.Any())
+                {
+                    projectReference.PackageReferences = projectReference.PackageReferences
+                        .OrderBy(x => x.PackageId.ToLower())
+                        .ToList();
+                }
+            });
+
             return projectReferences
                 .OrderBy(projectReference => projectReference.ProjectName.ToLower())
                 .ToList();

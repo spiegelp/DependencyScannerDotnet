@@ -20,7 +20,11 @@ namespace DependencyScannerDotnet.Core.Test.Services
             TargetFrameworkMappingService targetFrameworkMappingService = new();
             DependencyScanner dependencyScanner = new(projectSource, targetFrameworkMappingService);
 
-            List<ProjectReference> projects = await dependencyScanner.ScanDependenciesAsync();
+            ScanResult result = await dependencyScanner.ScanDependenciesAsync();
+
+            Assert.NotNull(result);
+
+            List<ProjectReference> projects = result.Projects;
 
             Assert.NotNull(projects);
             Assert.Single(projects);

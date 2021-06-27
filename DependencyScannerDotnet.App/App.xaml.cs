@@ -20,6 +20,8 @@ namespace DependencyScannerDotnet.App
             FrameworkElement.LanguageProperty.OverrideMetadata(typeof(FrameworkElement), new FrameworkPropertyMetadata(XmlLanguage.GetLanguage(CultureInfo.CurrentCulture.IetfLanguageTag)));
 
             WindowViewModel windowViewModel = new();
+            SelectProjectDirectoryViewModel viewModel = new(windowViewModel);
+            windowViewModel.CurrentViewModel = viewModel;
             MainWindow mainWindow = new(windowViewModel);
 
             mainWindow.Show();

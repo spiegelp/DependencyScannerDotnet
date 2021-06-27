@@ -18,6 +18,12 @@ namespace DependencyScannerDotnet.Core.Services
 
         protected ProjectReference ParseProjectFile(byte[] fileBytes)
         {
+            // get rid of the BOM (XML API does not like it)
+            if (fileBytes.Length > 3 && fileBytes[0] == 239 && fileBytes[1] == 187 && fileBytes[2] == 191)
+            {
+                fileBytes = fileBytes[3..];
+            }
+
             ProjectReference projectReference = new();
 
             string fileStr = Encoding.UTF8.GetString(fileBytes);
@@ -98,8 +104,6 @@ namespace DependencyScannerDotnet.Core.Services
 
                 project.PackageReferences.Add(packageReference);
             }
-
-
         }
 
         private void ParseLegacyProject(XmlElement root, ProjectReference projectReference)
@@ -116,7 +120,8 @@ namespace DependencyScannerDotnet.Core.Services
                 {
                     project.ProjectReferences.ToList().ForEach(projectReference =>
                     {
-                        if (projectsByName.TryGetValue(projectReference.ProjectName, out ProjectReference item)) {
+                        if (projectsByName.TryGetValue(projectReference.ProjectName, out ProjectReference item))
+                        {
                             project.ProjectReferences.Remove(projectReference);
                             project.ProjectReferences.Add(item);
                         }
