@@ -40,16 +40,18 @@ namespace DependencyScannerDotnet.App.GuiLayer.ViewModel
             }
         }
 
-        public ICommand SelectedDirectoryCommand { get; init; }
+        public ICommand SelectDirectoryCommand { get; init; }
+
+        public ICommand SelectImportFileCommand { get; init; }
 
         public SelectProjectDirectoryViewModel(WindowViewModel windowViewModel)
             : base(windowViewModel)
         {
             ScanCommand = new DelegateCommand(ScanHandler);
-            SelectedDirectoryCommand = new DelegateCommand(SelectDirectoryHandler);
+            SelectDirectoryCommand = new DelegateCommand(SelectDirectoryHandler);
+            SelectImportFileCommand = new DelegateCommand(SelectImportFileHandler);
 
 #if DEBUG
-            // 4
             string solutionDirectory = Path.Combine(new DirectoryInfo(new FileInfo(GetType().Assembly.Location).DirectoryName).FullName, @"..\..\..\..\");
             DirectoryInfo directory = new DirectoryInfo(solutionDirectory);
 
@@ -62,7 +64,8 @@ namespace DependencyScannerDotnet.App.GuiLayer.ViewModel
 
         private async void ScanHandler()
         {
-            if (HasSelectedDirectory) {
+            if (HasSelectedDirectory)
+            {
                 ScanResultViewModel nextViewModel = null;
 
                 try
@@ -100,6 +103,43 @@ namespace DependencyScannerDotnet.App.GuiLayer.ViewModel
             if (result.Confirmed)
             {
                 SelectedDirectory = result.Directory;
+            }
+        }
+
+        private async void SelectImportFileHandler()
+        {
+            OpenFileDialogArguments args = new()
+            {
+                Width = 600,
+                Height = 800,
+                CurrentDirectory = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                Filters = "JSON|*.json"
+            };
+
+            OpenFileDialogResult result = await OpenFileDialog.ShowDialogAsync(WindowViewModel.MainWindowDialogHostName, args);
+
+            if (result.Confirmed)
+            {
+                ScanResultViewModel nextViewModel = null;
+
+                try
+                {
+                    IsBusy = true;
+
+                    nextViewModel = await Task.Run(async () =>
+                    {
+                        ScanResultViewModel viewModel = new(WindowViewModel);
+                        await viewModel.InitImportAsync(result.File).ConfigureAwait(false);
+
+                        return viewModel;
+                    });
+                }
+                finally
+                {
+                    IsBusy = false;
+                }
+
+                WindowViewModel.CurrentViewModel = nextViewModel;
             }
         }
     }

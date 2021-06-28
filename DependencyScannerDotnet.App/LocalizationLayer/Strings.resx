@@ -120,10 +120,31 @@
   <data name="AppName" xml:space="preserve">
     <value>Dependency Scanner for .NET</value>
   </data>
+  <data name="Export" xml:space="preserve">
+    <value>Export</value>
+  </data>
+  <data name="Import" xml:space="preserve">
+    <value>Import</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>No</value>
+  </data>
   <data name="NoDirectorySelected" xml:space="preserve">
     <value>No directory selected</value>
   </data>
+  <data name="OrImportJsonFile" xml:space="preserve">
+    <value>Or import .json file</value>
+  </data>
+  <data name="OverwriteExistingFile" xml:space="preserve">
+    <value>Overwrite existing file?</value>
+  </data>
   <data name="Scan" xml:space="preserve">
     <value>Scan</value>
+  </data>
+  <data name="SelectDirectoryToScanForCsprojFiles" xml:space="preserve">
+    <value>Select directory to scan for .csproj files</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>Yes</value>
   </data>
 </root>

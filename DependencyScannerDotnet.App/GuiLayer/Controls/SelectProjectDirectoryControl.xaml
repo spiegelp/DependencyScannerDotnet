@@ -23,22 +23,23 @@
         <mde:AppBar Title="{x:Static localization:Strings.AppName}" />
         <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto"
                       Padding="16" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-            <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
-                <Grid Margin="0,0,0,32" HorizontalAlignment="Center">
+            <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" VerticalAlignment="Center" Width="600">
+                <TextBlock Text="{x:Static localization:Strings.SelectDirectoryToScanForCsprojFiles}" FontSize="20" FontWeight="Light" HorizontalAlignment="Stretch" />
+                <Grid Margin="0,16" HorizontalAlignment="Center">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="16" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <TextBlock Text="{Binding Path=SelectedDirectory}" TextTrimming="CharacterEllipsis" TextWrapping="NoWrap"
-                               ToolTip="{Binding Path=SelectedDirectory}"
-                               Visibility="{Binding Path=SelectedDirectory, Converter={StaticResource notNullToVisibleConverter}}"
-                               VerticalAlignment="Center" />
+                                ToolTip="{Binding Path=SelectedDirectory}"
+                                Visibility="{Binding Path=SelectedDirectory, Converter={StaticResource notNullToVisibleConverter}}"
+                                VerticalAlignment="Center" />
                     <TextBlock Text="{x:Static localization:Strings.NoDirectorySelected}"
-                               Visibility="{Binding Path=SelectedDirectory, Converter={StaticResource nullToVisibleConverter}}"
-                               VerticalAlignment="Center" />
+                                Visibility="{Binding Path=SelectedDirectory, Converter={StaticResource nullToVisibleConverter}}"
+                                VerticalAlignment="Center" />
                     <Button Grid.Column="2" Style="{StaticResource MaterialDesignToolButton}" Foreground="{DynamicResource PrimaryHueMidBrush}" Cursor="Hand"
-                            Command="{Binding Path=SelectedDirectoryCommand}">
+                            Command="{Binding Path=SelectDirectoryCommand}">
                         <md:PackIcon Kind="Folder" Width="24" Height="24" />
                     </Button>
                 </Grid>
@@ -46,6 +47,10 @@
                         IsEnabled="{Binding Path=HasSelectedDirectory}"
                         HorizontalAlignment="Center"
                         Command="{Binding Path=ScanCommand}" />
+                <TextBlock Text="{x:Static localization:Strings.OrImportJsonFile}" FontSize="20" FontWeight="Light" HorizontalAlignment="Stretch" Margin="0,64,0,0" />
+                <Button Content="{Binding Source={x:Static localization:Strings.Import}, Converter={StaticResource upperCaseConverter}}"
+                        Margin="0,16,0,0" HorizontalAlignment="Center"
+                        Command="{Binding Path=SelectImportFileCommand}" />
             </StackPanel>
         </ScrollViewer>
     </Grid>
