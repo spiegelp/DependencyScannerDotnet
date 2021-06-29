@@ -106,8 +106,43 @@ namespace DependencyScannerDotnet.Core.Services
             }
         }
 
-        private void ParseLegacyProject(XmlElement root, ProjectReference projectReference)
+        private void ParseLegacyProject(XmlElement root, ProjectReference project)
         {
+            XmlNode targetFrameworkNode = root.SelectSingleNode("PropertyGroup/TargetFrameworkVersion");
+
+            if (targetFrameworkNode != null && !string.IsNullOrWhiteSpace(targetFrameworkNode.InnerText))
+            {
+                project.Targets.Add(targetFrameworkNode.InnerText[1..].Replace(".", string.Empty));
+            }
+
+            XmlNodeList projectReferenceNodeList = root.SelectNodes("ItemGroup/ProjectReference");
+
+            foreach (XmlElement projectReferenceNode in projectReferenceNodeList)
+            {
+                string referencedProjectName = projectReferenceNode.GetAttribute("Include");
+                referencedProjectName = referencedProjectName.Replace('\\', '/');
+                referencedProjectName = Path.GetFileNameWithoutExtension(referencedProjectName);
+
+                ProjectReference projectReference = new()
+                {
+                    ProjectName = referencedProjectName
+                };
+
+                project.ProjectReferences.Add(projectReference);
+            }
+
+            XmlNodeList packageReferenceNodeList = root.SelectNodes("ItemGroup/PackageReference");
+
+            foreach (XmlElement packageReferenceNode in packageReferenceNodeList)
+            {
+                PackageReference packageReference = new()
+                {
+                    PackageId = packageReferenceNode.GetAttribute("Include"),
+                    Version = packageReferenceNode.GetAttribute("Version")
+                };
+
+                project.PackageReferences.Add(packageReference);
+            }
         }
 
         protected void ReplaceReferencedProjects(List<ProjectReference> projects)
