@@ -47,6 +47,30 @@ namespace DependencyScannerDotnet.Core.Test.Services
             );
         }
 
+        [Fact]
+        public void FindPackageVersionConflicts_Ok()
+        {
+            ProjectReference projectA = new() { ProjectName = "ProjectA", PackageReferences = new() { new() { PackageId = "test.package", Version = "1.2.0" }, new() { PackageId = "other.package", Version = "1.0.0" } } };
+            ProjectReference projectB = new() { ProjectName = "ProjectB", ProjectReferences = new() { projectA }, PackageReferences = new() { new() { PackageId = "test.package", Version = "2.0.0" } } };
+
+            List<ProjectReference> projects = new() { projectA, projectB };
+
+            ScanResult scanResult = new(projects, null);
+
+            DependencyScanner dependencyScanner = new(null, null);
+
+            dependencyScanner.FindPackageVersionConflicts(scanResult);
+
+            Assert.True(projectA.PackageReferences[0].HasPotentialVersionConflict);
+            Assert.False(projectA.PackageReferences[1].HasPotentialVersionConflict);
+            Assert.True(projectB.PackageReferences[0].HasPotentialVersionConflict);
+            Assert.NotNull(scanResult.ConflictPackages);
+            Assert.Collection(
+                scanResult.ConflictPackages,
+                conflictPackage => Assert.True(conflictPackage.PackageId == "test.package" && conflictPackage.Versions != null && conflictPackage.Versions[0] == "1.2.0" && conflictPackage.Versions[1] == "2.0.0")
+            );
+        }
+
         public class XUnitProjectSourceMock : ProjectSource
         {
             public XUnitProjectSourceMock() : base() { }

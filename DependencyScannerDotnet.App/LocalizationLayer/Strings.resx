@@ -120,6 +120,9 @@
   <data name="AppName" xml:space="preserve">
     <value>Dependency Scanner for .NET</value>
   </data>
+  <data name="DependencyTree" xml:space="preserve">
+    <value>Dependency tree</value>
+  </data>
   <data name="Export" xml:space="preserve">
     <value>Export</value>
   </data>
@@ -132,6 +135,9 @@
   <data name="NoDirectorySelected" xml:space="preserve">
     <value>No directory selected</value>
   </data>
+  <data name="NoVersionConflictsDetected" xml:space="preserve">
+    <value>No version conflicts detected</value>
+  </data>
   <data name="OrImportJsonFile" xml:space="preserve">
     <value>Or import .json file</value>
   </data>
@@ -143,6 +149,9 @@
   </data>
   <data name="SelectDirectoryToScanForCsprojFiles" xml:space="preserve">
     <value>Select directory to scan for .csproj files</value>
+  </data>
+  <data name="VersionConflicts" xml:space="preserve">
+    <value>Version conflicts</value>
   </data>
   <data name="Yes" xml:space="preserve">
     <value>Yes</value>

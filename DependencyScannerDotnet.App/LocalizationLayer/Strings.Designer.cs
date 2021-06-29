@@ -70,6 +70,15 @@ namespace DependencyScannerDotnet.App.LocalizationLayer {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dependency tree ähnelt.
+        /// </summary>
+        public static string DependencyTree {
+            get {
+                return ResourceManager.GetString("DependencyTree", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Export ähnelt.
         /// </summary>
         public static string Export {
@@ -106,6 +115,15 @@ namespace DependencyScannerDotnet.App.LocalizationLayer {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die No version conflicts detected ähnelt.
+        /// </summary>
+        public static string NoVersionConflictsDetected {
+            get {
+                return ResourceManager.GetString("NoVersionConflictsDetected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Or import .json file ähnelt.
         /// </summary>
         public static string OrImportJsonFile {
@@ -138,6 +156,15 @@ namespace DependencyScannerDotnet.App.LocalizationLayer {
         public static string SelectDirectoryToScanForCsprojFiles {
             get {
                 return ResourceManager.GetString("SelectDirectoryToScanForCsprojFiles", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Version conflicts ähnelt.
+        /// </summary>
+        public static string VersionConflicts {
+            get {
+                return ResourceManager.GetString("VersionConflicts", resourceCulture);
             }
         }
         

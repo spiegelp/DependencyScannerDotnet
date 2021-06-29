@@ -10,5 +10,7 @@ namespace DependencyScannerDotnet.Core.Services
     public interface IDependencyScanner
     {
         Task<ScanResult> ScanDependenciesAsync(int maxDepth = 64);
+
+        void FindPackageVersionConflicts(ScanResult scanResult);
     }
 }

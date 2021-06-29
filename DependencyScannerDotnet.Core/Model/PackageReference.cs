@@ -13,6 +13,8 @@ namespace DependencyScannerDotnet.Core.Model
 
         public string Version { get; set; }
 
+        public bool HasPotentialVersionConflict { get; set; }
+
         public List<PackageReference> PackageReferences { get; set; } = new();
 
         [JsonIgnore]
@@ -33,6 +35,9 @@ namespace DependencyScannerDotnet.Core.Model
             }
         }
 
-        public PackageReference() { }
+        public PackageReference()
+        {
+            HasPotentialVersionConflict = false;
+        }
     }
 }

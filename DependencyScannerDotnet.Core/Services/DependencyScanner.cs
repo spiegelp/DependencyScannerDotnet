@@ -53,7 +53,11 @@ namespace DependencyScannerDotnet.Core.Services
                 }
             }
 
-            return new(projectReferences);
+            ScanResult scanResult = new(projectReferences, null);
+
+            FindPackageVersionConflicts(scanResult);
+
+            return scanResult;
         }
 
         private async Task ScanDependenciesAsync(PackageReference packageReference, SourceCacheContext cache, SourceRepository repository, NuGetFramework framework, int depth, int maxDepth, CancellationToken cancellationToken)
@@ -104,6 +108,39 @@ namespace DependencyScannerDotnet.Core.Services
             }
 
             return localPackageCache;
+        }
+
+        public void FindPackageVersionConflicts(ScanResult scanResult)
+        {
+            scanResult.ConflictPackages = new();
+
+            List<IGrouping<string, PackageReference>> conflictPackages = scanResult.Projects
+                .SelectMany(project => project.PackageReferences)
+                .GroupBy(package => package.PackageId)
+                .Where(group => group.ToList().Select(package => package.Version).ToHashSet().Count > 1)
+                .ToList();
+
+            conflictPackages.ForEach(group =>
+            {
+                List<PackageReference> packages = group.ToList();
+                packages.ForEach(package => package.HasPotentialVersionConflict = true);
+
+                List<string> versions = packages.Select(package => package.Version)
+                    .ToHashSet()
+                    .Select(version => new NuGetVersion(version))
+                    .OrderBy(version => version)
+                    .Select(version => version.ToString())
+                    .ToList();
+
+                scanResult.ConflictPackages.Add(new ConflictPackage(group.Key, versions));
+            });
+
+            if (scanResult.ConflictPackages.Count > 1)
+            {
+                scanResult.ConflictPackages = scanResult.ConflictPackages
+                    .OrderBy(conflictPackage => conflictPackage.PackageId)
+                    .ToList();
+            }
         }
     }
 }
