@@ -7,6 +7,6 @@ namespace DependencyScannerDotnet.Core.Services
 {
     public interface IProjectSource
     {
-        Task<List<ProjectReference>> LoadProjectFilesAsync();
+        Task<List<ProjectFile>> LoadProjectFilesAsync();
     }
 }

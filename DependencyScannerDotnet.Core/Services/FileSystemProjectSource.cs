@@ -19,7 +19,7 @@ namespace DependencyScannerDotnet.Core.Services
             m_baseDirectory = baseDirectory;
         }
 
-        public override async Task<List<ProjectReference>> LoadProjectFilesAsync()
+        public override async Task<List<ProjectFile>> LoadProjectFilesAsync()
         {
             List<FileInfo> projectFileInfoList = new();
 
@@ -43,48 +43,48 @@ namespace DependencyScannerDotnet.Core.Services
             }
         }
 
-        private async Task<List<ProjectReference>> ParseProjectFilesAsync(List<FileInfo> projectFileInfoList)
+        private async Task<List<ProjectFile>> ParseProjectFilesAsync(List<FileInfo> projectFileInfoList)
         {
-            List<ProjectReference> projectReferences = new();
+            List<ProjectFile> projects = new();
 
             foreach (FileInfo projectFileInfo in projectFileInfoList)
             {
-                ProjectReference projectReference = await ParseProjectFileAsync(projectFileInfo).ConfigureAwait(false);
-                projectReferences.Add(projectReference);
+                ProjectFile project = await ParseProjectFileAsync(projectFileInfo).ConfigureAwait(false);
+                projects.Add(project);
             }
 
-            ReplaceReferencedProjects(projectReferences);
+            ReplaceReferencedProjects(projects);
 
-            projectReferences.ForEach(projectReference =>
+            projects.ForEach(projectReference =>
             {
-                if (projectReference.ProjectReferences != null && projectReference.ProjectReferences.Any())
+                if (projectReference.ReferencedProjects != null && projectReference.ReferencedProjects.Any())
                 {
-                    projectReference.ProjectReferences = projectReference.ProjectReferences
+                    projectReference.ReferencedProjects = projectReference.ReferencedProjects
                         .OrderBy(x => x.ProjectName.ToLower())
                         .ToList();
                 }
 
-                if (projectReference.PackageReferences != null && projectReference.PackageReferences.Any())
+                if (projectReference.ReferencedPackages != null && projectReference.ReferencedPackages.Any())
                 {
-                    projectReference.PackageReferences = projectReference.PackageReferences
-                        .OrderBy(x => x.PackageId.ToLower())
+                    projectReference.ReferencedPackages = projectReference.ReferencedPackages
+                        .OrderBy(x => x.Id.ToLower())
                         .ToList();
                 }
             });
 
-            return projectReferences
+            return projects
                 .OrderBy(projectReference => projectReference.ProjectName.ToLower())
                 .ToList();
         }
 
-        private async Task<ProjectReference> ParseProjectFileAsync(FileInfo projectFileInfo)
+        private async Task<ProjectFile> ParseProjectFileAsync(FileInfo projectFileInfo)
         {
             byte[] fileBytes = await File.ReadAllBytesAsync(projectFileInfo.FullName).ConfigureAwait(false);
 
-            ProjectReference projectReference = ParseProjectFile(fileBytes);
-            projectReference.ProjectName = Path.GetFileNameWithoutExtension(projectFileInfo.Name);
+            ProjectFile project = ParseProjectFile(fileBytes);
+            project.ProjectName = Path.GetFileNameWithoutExtension(projectFileInfo.Name);
 
-            return projectReference;
+            return project;
         }
     }
 }

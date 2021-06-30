@@ -25,24 +25,26 @@ namespace DependencyScannerDotnet.Core.Test.Services
             }
 
             FileSystemProjectSource projectSource = new(directoryInfo.FullName);
-            List<ProjectReference> projects = await projectSource.LoadProjectFilesAsync();
+            List<ProjectFile> projects = await projectSource.LoadProjectFilesAsync();
 
             Assert.NotNull(projects);
             Assert.NotEmpty(projects);
 
-            ProjectReference testProject = projects.Where(project => project.ProjectName == "DependencyScannerDotnet.Core.Test").SingleOrDefault();
+            ProjectFile testProject = projects.Where(project => project.ProjectName == "DependencyScannerDotnet.Core.Test").SingleOrDefault();
 
             Assert.NotNull(testProject);
             Assert.True(testProject.IsNewSdkStyle);
             Assert.NotNull(testProject.Targets);
             Assert.Single(testProject.Targets);
             Assert.Contains(testProject.Targets, target => target == "net5.0");
-            Assert.NotNull(testProject.ProjectReferences);
-            Assert.Single(testProject.ProjectReferences);
-            Assert.Contains(testProject.ProjectReferences, project => project.ProjectName == "DependencyScannerDotnet.Core");
-            Assert.NotNull(testProject.PackageReferences);
-            Assert.Equal(4, testProject.PackageReferences.Count);
-            Assert.Contains(testProject.PackageReferences, package => package.PackageId == "xunit" && package.Version == "2.4.1");
+            Assert.NotNull(testProject.ReferencedProjects);
+            Assert.Collection(
+                testProject.ReferencedProjects,
+                project => Assert.Equal("DependencyScannerDotnet.Core", project.ProjectName)
+            );
+            Assert.NotNull(testProject.ReferencedPackages);
+            Assert.Equal(4, testProject.ReferencedPackages.Count);
+            Assert.Contains(testProject.ReferencedPackages, package => package.Id == "xunit" && package.Version.ToString() == "2.4.1");
         }
     }
 }

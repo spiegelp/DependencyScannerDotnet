@@ -28,7 +28,29 @@ namespace DependencyScannerDotnet.Core.Services
 
         public async Task<ScanResult> ScanDependenciesAsync(int maxDepth = 64)
         {
-            List<ProjectReference> projectReferences = await m_projectSource.LoadProjectFilesAsync().ConfigureAwait(false);
+            List<ProjectFile> projectFiles = await m_projectSource.LoadProjectFilesAsync().ConfigureAwait(false);
+
+            Dictionary<PackageIdentity, PackageReference> packageReferenceCache = new(PackageIdentityComparer.Default);
+
+            Dictionary<string, ProjectReference> projectsByName = projectFiles
+                .Select(projectFile => new ProjectReference()
+                {
+                    ProjectName = projectFile.ProjectName,
+                    Version = projectFile.Version,
+                    IsNewSdkStyle = projectFile.IsNewSdkStyle,
+                    Targets = new(projectFile.Targets)
+                })
+                .ToDictionary(projectReference => projectReference.ProjectName);
+
+            projectFiles.ForEach(projectFile =>
+            {
+                if (projectFile.ReferencedProjects != null && projectFile.ReferencedProjects.Any())
+                {
+                    ProjectReference projectReference = projectsByName[projectFile.ProjectName];
+
+                    projectFile.ReferencedProjects.ForEach(referencedProjectFile => projectReference.ProjectReferences.Add(projectsByName[referencedProjectFile.ProjectName]));
+                }
+            });
 
             CancellationToken cancellationToken = CancellationToken.None;
 
@@ -36,63 +58,83 @@ namespace DependencyScannerDotnet.Core.Services
 
             SourceRepository repository = Repository.Factory.GetCoreV3(GetPackageSourceStr(), FeedType.FileSystemV3);
 
-            foreach (ProjectReference projectReference in projectReferences)
+            foreach (ProjectFile projectFile in projectFiles)
             {
                 NuGetFramework framework = null;
 
-                if (projectReference.Targets != null && projectReference.Targets.Any())
+                if (projectFile.Targets != null && projectFile.Targets.Any())
                 {
-                    framework = NuGetFramework.ParseFolder(m_targetFrameworkMappingService.GetNugetFolderForTargetFramework(projectReference.Targets.First()));
+                    framework = NuGetFramework.ParseFolder(m_targetFrameworkMappingService.GetNugetFolderForTargetFramework(projectFile.Targets.First()));
                 }
 
                 framework ??= NuGetFramework.AnyFramework;
 
-                foreach (PackageReference packageReference in projectReference.PackageReferences)
+                foreach (PackageIdentity packageIdentity in projectFile.ReferencedPackages)
                 {
-                    await ScanDependenciesAsync(packageReference, cache, repository, framework, 0, maxDepth, cancellationToken).ConfigureAwait(false);
+                    PackageReference packageReference = await ScanDependenciesAsync(packageIdentity, cache, repository, framework, packageReferenceCache, 0, maxDepth, cancellationToken).ConfigureAwait(false);
+
+                    if (packageReference != null)
+                    {
+                        projectsByName[projectFile.ProjectName].PackageReferences.Add(packageReference);
+                    }
                 }
             }
 
-            ScanResult scanResult = new(projectReferences, null);
+            ScanResult scanResult = new(projectsByName.Values.ToList(), null);
 
             FindPackageVersionConflicts(scanResult);
 
             return scanResult;
         }
 
-        private async Task ScanDependenciesAsync(PackageReference packageReference, SourceCacheContext cache, SourceRepository repository, NuGetFramework framework, int depth, int maxDepth, CancellationToken cancellationToken)
+        private async Task<PackageReference> ScanDependenciesAsync(PackageIdentity packageIdentity, SourceCacheContext cache, SourceRepository repository, NuGetFramework framework,
+            Dictionary<PackageIdentity, PackageReference> packageReferenceCache, int depth, int maxDepth, CancellationToken cancellationToken)
         {
+            if (packageReferenceCache.TryGetValue(packageIdentity, out PackageReference packageReference))
+            {
+                return packageReference;
+            }
+
             if (depth >= maxDepth)
             {
-                return;
+                return null;
             }
 
             DependencyInfoResource dependencyInfoResource = await repository.GetResourceAsync<DependencyInfoResource>(cancellationToken).ConfigureAwait(false);
 
-            PackageIdentity packageIdentity = new(packageReference.PackageId, new NuGetVersion(packageReference.Version));
             SourcePackageDependencyInfo dependencyInfo = await dependencyInfoResource.ResolvePackage(packageIdentity, framework, cache, NullLogger.Instance, cancellationToken).ConfigureAwait(false);
 
             if (dependencyInfo != null)
             {
+                packageReference = new()
+                {
+                    PackageId = dependencyInfo.Id,
+                    Version = dependencyInfo.Version.ToString()
+                };
+
+                packageReferenceCache[packageIdentity] = packageReference;
+
                 foreach (PackageDependency packageDependency in dependencyInfo.Dependencies)
                 {
-                    PackageReference childPackageReference = new()
+                    PackageIdentity childPackageIdentity = new(packageDependency.Id, packageDependency.VersionRange.MinVersion);
+
+                    PackageReference childPackageReference = await ScanDependenciesAsync(childPackageIdentity, cache, repository, framework, packageReferenceCache, depth + 1, maxDepth, cancellationToken).ConfigureAwait(false);
+
+                    if (childPackageReference != null)
                     {
-                        PackageId = packageDependency.Id,
-                        Version = packageDependency.VersionRange.MinVersion.ToString()
-                    };
-
-                    packageReference.PackageReferences.Add(childPackageReference);
-
-                    await ScanDependenciesAsync(childPackageReference, cache, repository, framework, depth + 1, maxDepth, cancellationToken).ConfigureAwait(false);
+                        packageReference.PackageReferences.Add(childPackageReference);
+                    }
                 }
 
-                if (packageReference.PackageReferences != null && packageReference.PackageReferences.Any())
-                {
-                    packageReference.PackageReferences = packageReference.PackageReferences
-                        .OrderBy(package => package.PackageId.ToLower())
-                        .ToList();
-                }
+                packageReference.PackageReferences = packageReference.PackageReferences
+                    .OrderBy(package => package.PackageId.ToLower())
+                    .ToList();
+
+                return packageReference;
+            }
+            else
+            {
+                return null;
             }
         }
 
@@ -116,8 +158,9 @@ namespace DependencyScannerDotnet.Core.Services
 
             List<IGrouping<string, PackageReference>> conflictPackages = scanResult.Projects
                 .SelectMany(project => project.PackageReferences)
+                .Distinct()
                 .GroupBy(package => package.PackageId)
-                .Where(group => group.ToList().Select(package => package.Version).ToHashSet().Count > 1)
+                .Where(group => group.ToList().Select(package => package.Version).Distinct().Count() > 1)
                 .ToList();
 
             conflictPackages.ForEach(group =>
@@ -126,7 +169,7 @@ namespace DependencyScannerDotnet.Core.Services
                 packages.ForEach(package => package.HasPotentialVersionConflict = true);
 
                 List<string> versions = packages.Select(package => package.Version)
-                    .ToHashSet()
+                    .Distinct()
                     .Select(version => new NuGetVersion(version))
                     .OrderBy(version => version)
                     .Select(version => version.ToString())

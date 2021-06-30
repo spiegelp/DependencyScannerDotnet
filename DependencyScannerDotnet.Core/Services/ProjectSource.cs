@@ -1,4 +1,6 @@
 ﻿using DependencyScannerDotnet.Core.Model;
+using NuGet.Packaging.Core;
+using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -11,12 +13,11 @@ namespace DependencyScannerDotnet.Core.Services
 {
     public abstract class ProjectSource : IProjectSource
     {
-
         public ProjectSource() { }
 
-        public abstract Task<List<ProjectReference>> LoadProjectFilesAsync();
+        public abstract Task<List<ProjectFile>> LoadProjectFilesAsync();
 
-        protected ProjectReference ParseProjectFile(byte[] fileBytes)
+        protected ProjectFile ParseProjectFile(byte[] fileBytes)
         {
             // get rid of the BOM (XML API does not like it)
             if (fileBytes.Length > 3 && fileBytes[0] == 239 && fileBytes[1] == 187 && fileBytes[2] == 191)
@@ -24,7 +25,7 @@ namespace DependencyScannerDotnet.Core.Services
                 fileBytes = fileBytes[3..];
             }
 
-            ProjectReference projectReference = new();
+            ProjectFile project = new();
 
             string fileStr = Encoding.UTF8.GetString(fileBytes);
 
@@ -34,21 +35,21 @@ namespace DependencyScannerDotnet.Core.Services
 
             if (root.Name == "Project" && root.HasAttribute("Sdk"))
             {
-                projectReference.IsNewSdkStyle = true;
+                project.IsNewSdkStyle = true;
 
-                ParseNewSdkStyleProject(root, projectReference);
+                ParseNewSdkStyleProject(root, project);
             }
             else
             {
-                projectReference.IsNewSdkStyle = false;
+                project.IsNewSdkStyle = false;
 
-                ParseLegacyProject(root, projectReference);
+                ParseLegacyProject(root, project);
             }
 
-            return projectReference;
+            return project;
         }
 
-        private void ParseNewSdkStyleProject(XmlElement root, ProjectReference project)
+        private void ParseNewSdkStyleProject(XmlElement root, ProjectFile project)
         {
             XmlNode node = root.SelectSingleNode("PropertyGroup/Version");
 
@@ -84,29 +85,25 @@ namespace DependencyScannerDotnet.Core.Services
                 referencedProjectName = referencedProjectName.Replace('\\', '/');
                 referencedProjectName = Path.GetFileNameWithoutExtension(referencedProjectName);
 
-                ProjectReference projectReference = new()
+                ProjectFile referencedProject = new()
                 {
                     ProjectName = referencedProjectName
                 };
 
-                project.ProjectReferences.Add(projectReference);
+                project.ReferencedProjects.Add(referencedProject);
             }
 
             XmlNodeList packageReferenceNodeList = root.SelectNodes("ItemGroup/PackageReference");
 
             foreach (XmlElement packageReferenceNode in packageReferenceNodeList)
             {
-                PackageReference packageReference = new()
-                {
-                    PackageId = packageReferenceNode.GetAttribute("Include"),
-                    Version = packageReferenceNode.GetAttribute("Version")
-                };
+                PackageIdentity packageIdentity = new(packageReferenceNode.GetAttribute("Include"), new NuGetVersion(packageReferenceNode.GetAttribute("Version")));
 
-                project.PackageReferences.Add(packageReference);
+                project.ReferencedPackages.Add(packageIdentity);
             }
         }
 
-        private void ParseLegacyProject(XmlElement root, ProjectReference project)
+        private void ParseLegacyProject(XmlElement root, ProjectFile project)
         {
             XmlNode targetFrameworkNode = root.SelectSingleNode("PropertyGroup/TargetFrameworkVersion");
 
@@ -123,42 +120,39 @@ namespace DependencyScannerDotnet.Core.Services
                 referencedProjectName = referencedProjectName.Replace('\\', '/');
                 referencedProjectName = Path.GetFileNameWithoutExtension(referencedProjectName);
 
-                ProjectReference projectReference = new()
+                ProjectFile referencedProject = new()
                 {
                     ProjectName = referencedProjectName
                 };
 
-                project.ProjectReferences.Add(projectReference);
+                project.ReferencedProjects.Add(referencedProject);
             }
 
             XmlNodeList packageReferenceNodeList = root.SelectNodes("ItemGroup/PackageReference");
 
             foreach (XmlElement packageReferenceNode in packageReferenceNodeList)
             {
-                PackageReference packageReference = new()
-                {
-                    PackageId = packageReferenceNode.GetAttribute("Include"),
-                    Version = packageReferenceNode.GetAttribute("Version")
-                };
+                PackageIdentity packageIdentity = new(packageReferenceNode.GetAttribute("Include"), new NuGetVersion(packageReferenceNode.GetAttribute("Version")));
 
-                project.PackageReferences.Add(packageReference);
+                project.ReferencedPackages.Add(packageIdentity);
             }
         }
 
-        protected void ReplaceReferencedProjects(List<ProjectReference> projects)
+        protected void ReplaceReferencedProjects(List<ProjectFile> projects)
         {
-            Dictionary<string, ProjectReference> projectsByName = projects.ToDictionary(projectReference => projectReference.ProjectName);
+            Dictionary<string, ProjectFile> projectsByName = projects.ToDictionary(project => project.ProjectName);
+            Dictionary<PackageIdentity, PackageReference> packageReferenceCache = new(PackageIdentityComparer.Default);
 
             projects.ForEach(project =>
             {
-                if (project.ProjectReferences != null)
+                if (project.ReferencedProjects != null)
                 {
-                    project.ProjectReferences.ToList().ForEach(projectReference =>
+                    project.ReferencedProjects.ToList().ForEach(referencedProject =>
                     {
-                        if (projectsByName.TryGetValue(projectReference.ProjectName, out ProjectReference item))
+                        if (projectsByName.TryGetValue(referencedProject.ProjectName, out ProjectFile item))
                         {
-                            project.ProjectReferences.Remove(projectReference);
-                            project.ProjectReferences.Add(item);
+                            project.ReferencedProjects.Remove(referencedProject);
+                            project.ReferencedProjects.Add(item);
                         }
                     });
                 }

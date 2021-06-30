@@ -1,5 +1,6 @@
 ﻿using DependencyScannerDotnet.Core.Model;
 using DependencyScannerDotnet.Core.Services;
+using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -75,26 +76,20 @@ namespace DependencyScannerDotnet.Core.Test.Services
         {
             public XUnitProjectSourceMock() : base() { }
 
-            public override Task<List<ProjectReference>> LoadProjectFilesAsync()
+            public override Task<List<ProjectFile>> LoadProjectFilesAsync()
             {
-                ProjectReference projectReference = new()
+                ProjectFile projectFile = new()
                 {
                     ProjectName = "Dummy.Proj",
                     Version = "0.0.1",
                     IsNewSdkStyle = true
                 };
 
-                projectReference.Targets.Add("net5.0");
+                projectFile.Targets.Add("net5.0");
 
-                projectReference.PackageReferences.Add(
-                    new PackageReference
-                    {
-                        PackageId = "xunit",
-                        Version = "2.4.1"
-                    }
-                );
+                projectFile.ReferencedPackages.Add(new("xunit", new NuGetVersion("2.4.1")));
 
-                return Task.FromResult(new List<ProjectReference>() { projectReference });
+                return Task.FromResult(new List<ProjectFile>() { projectFile });
             }
         }
     }
