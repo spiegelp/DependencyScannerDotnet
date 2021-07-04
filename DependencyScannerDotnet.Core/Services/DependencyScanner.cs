@@ -104,6 +104,11 @@ namespace DependencyScannerDotnet.Core.Services
 
             SourcePackageDependencyInfo dependencyInfo = await dependencyInfoResource.ResolvePackage(packageIdentity, framework, cache, NullLogger.Instance, cancellationToken).ConfigureAwait(false);
 
+            if (dependencyInfo == null || dependencyInfo.Dependencies == null || !dependencyInfo.Dependencies.Any())
+            {
+                dependencyInfo = await dependencyInfoResource.ResolvePackage(packageIdentity, NuGetFramework.AnyFramework, cache, NullLogger.Instance, cancellationToken).ConfigureAwait(false);
+            }
+
             if (dependencyInfo != null)
             {
                 packageReference = new()
