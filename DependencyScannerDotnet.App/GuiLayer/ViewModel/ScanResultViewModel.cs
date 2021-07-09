@@ -48,6 +48,9 @@ namespace DependencyScannerDotnet.App.GuiLayer.ViewModel
         {
             ImportExportService importExportService = new();
             ScanResult = await importExportService.ImportScanResultAsync(file).ConfigureAwait(false);
+
+            DependencyScanner dependencyScanner = new(null, null);
+            dependencyScanner.FindPackageVersionConflicts(ScanResult);
         }
 
         private async Task ScanAsync(string directory)
