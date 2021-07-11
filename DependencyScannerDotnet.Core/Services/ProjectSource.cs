@@ -43,7 +43,7 @@ namespace DependencyScannerDotnet.Core.Services
             {
                 project.IsNewSdkStyle = false;
 
-                ParseLegacyProject(root, project);
+                ParseLegacyProject(projectXml, root, project);
             }
 
             return project;
@@ -103,16 +103,19 @@ namespace DependencyScannerDotnet.Core.Services
             }
         }
 
-        private void ParseLegacyProject(XmlElement root, ProjectFile project)
+        private void ParseLegacyProject(XmlDocument projectXml, XmlElement root, ProjectFile project)
         {
-            XmlNode targetFrameworkNode = root.SelectSingleNode("PropertyGroup/TargetFrameworkVersion");
+            XmlNamespaceManager namespaceManager = new(projectXml.NameTable);
+            namespaceManager.AddNamespace("msbuild", "http://schemas.microsoft.com/developer/msbuild/2003");
+
+            XmlNode targetFrameworkNode = root.SelectSingleNode("msbuild:PropertyGroup/msbuild:TargetFrameworkVersion", namespaceManager);
 
             if (targetFrameworkNode != null && !string.IsNullOrWhiteSpace(targetFrameworkNode.InnerText))
             {
-                project.Targets.Add(targetFrameworkNode.InnerText[1..].Replace(".", string.Empty));
+                project.Targets.Add($"net{targetFrameworkNode.InnerText[1..].Replace(".", string.Empty)}");
             }
 
-            XmlNodeList projectReferenceNodeList = root.SelectNodes("ItemGroup/ProjectReference");
+            XmlNodeList projectReferenceNodeList = root.SelectNodes("msbuild:ItemGroup/msbuild:ProjectReference", namespaceManager);
 
             foreach (XmlElement projectReferenceNode in projectReferenceNodeList)
             {
@@ -128,11 +131,13 @@ namespace DependencyScannerDotnet.Core.Services
                 project.ReferencedProjects.Add(referencedProject);
             }
 
-            XmlNodeList packageReferenceNodeList = root.SelectNodes("ItemGroup/PackageReference");
+            XmlNodeList packageReferenceNodeList = root.SelectNodes("msbuild:ItemGroup/msbuild:PackageReference", namespaceManager);
 
             foreach (XmlElement packageReferenceNode in packageReferenceNodeList)
             {
-                PackageIdentity packageIdentity = new(packageReferenceNode.GetAttribute("Include"), new NuGetVersion(packageReferenceNode.GetAttribute("Version")));
+                string packageId = packageReferenceNode.GetAttribute("Include");
+                string version = packageReferenceNode.SelectSingleNode("msbuild:Version", namespaceManager).InnerText;
+                PackageIdentity packageIdentity = new(packageId, new NuGetVersion(version));
 
                 project.ReferencedPackages.Add(packageIdentity);
             }
