@@ -147,14 +147,14 @@ namespace DependencyScannerDotnet.Core.Services
         {
             // https://api.nuget.org/v3/index.json
 
-            string localPackageCache = Environment.GetEnvironmentVariable("NUGET_PACKAGES");
+            string globalPackageFolder = Environment.GetEnvironmentVariable("NUGET_PACKAGES");
 
-            if (string.IsNullOrWhiteSpace(localPackageCache))
+            if (string.IsNullOrWhiteSpace(globalPackageFolder))
             {
-                localPackageCache = Path.Combine(Environment.GetEnvironmentVariable("LocalAppData"), "NuGet", "Cache");
+                globalPackageFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".nuget", "packages");
             }
 
-            return localPackageCache;
+            return globalPackageFolder;
         }
 
         public void FindPackageVersionConflicts(ScanResult scanResult)
