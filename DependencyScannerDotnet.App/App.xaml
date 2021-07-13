@@ -39,6 +39,11 @@
                     <SolidColorBrush x:Key="SecondaryHueMidBrush" Color="{StaticResource Accent400}" />
                     <SolidColorBrush x:Key="SecondaryHueMidForegroundBrush" Color="{StaticResource Accent400Foreground}" />
                 </ResourceDictionary>
+                
+                <!-- other colors -->
+                <ResourceDictionary>
+                    <SolidColorBrush x:Key="WarningYellow" Color="#ffea00" />
+                </ResourceDictionary>
 
                 <!-- data templates -->
                 <ResourceDictionary Source="pack://application:,,,/GuiLayer/Resources/ViewModelDataTemplates.xaml" />

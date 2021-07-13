@@ -8,6 +8,7 @@
              xmlns:ntConverters="clr-namespace:NuniToolbox.Ui.Converters;assembly=NuniToolbox.Ui"
              xmlns:coreModel="clr-namespace:DependencyScannerDotnet.Core.Model;assembly=DependencyScannerDotnet.Core"
              xmlns:local="clr-namespace:DependencyScannerDotnet.App.GuiLayer.Controls"
+             xmlns:converters="clr-namespace:DependencyScannerDotnet.App.GuiLayer.Converters"
              xmlns:localization="clr-namespace:DependencyScannerDotnet.App.LocalizationLayer"
              mc:Ignorable="d" 
              d:DesignHeight="600" d:DesignWidth="800" Background="{DynamicResource MaterialDesignBackground}">
@@ -17,6 +18,7 @@
         <ntConverters:BoolToVisibilityConverter x:Key="boolToVisibleConverter" FalseValue="Collapsed" TrueValue="Visible" />
         <ntConverters:EmptyEnumerableToVisibilityConverter x:Key="notEmptyToVisibleConverter" EmptyValue="Collapsed" NotEmptyValue="Visible" />
         <ntConverters:EmptyEnumerableToVisibilityConverter x:Key="notEmptyToCollapsedConverter" EmptyValue="Visible" NotEmptyValue="Collapsed" />
+        <converters:ZeroToCollapsedConverter x:Key="zeroToCollapsedConverter" />
     </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
@@ -59,11 +61,13 @@
                             <TreeViewItem Padding="0">
                                 <TreeViewItem.Header>
                                     <DockPanel>
-                                        <md:PackIcon DockPanel.Dock="Left" Kind="Package" Width="20" Height="20" VerticalAlignment="Center" />
-                                        <md:PackIcon DockPanel.Dock="Right" Kind="Warning" Foreground="Yellow"
-                                                     Visibility="{Binding Path=HasPotentialVersionConflict, Mode=OneTime, Converter={StaticResource boolToVisibleConverter}}"
-                                                     Width="16" Height="16" VerticalAlignment="Center" />
-                                        <StackPanel Orientation="Vertical" Margin="16,0,0,0" VerticalAlignment="Center">
+                                        <Grid DockPanel.Dock="Left" VerticalAlignment="Center" Margin="0,0,8,0">
+                                            <md:PackIcon Kind="Package" Width="20" Height="20" Margin="0,8,8,8" VerticalAlignment="Center" />
+                                            <md:PackIcon Kind="Warning" Foreground="{StaticResource WarningYellow}"
+                                                         Visibility="{Binding Path=HasPotentialVersionConflict, Mode=OneTime, Converter={StaticResource boolToVisibleConverter}}"
+                                                         Width="16" Height="16" HorizontalAlignment="Right" VerticalAlignment="Bottom" />
+                                        </Grid>
+                                        <StackPanel Orientation="Vertical" VerticalAlignment="Center">
                                             <TextBlock Text="{Binding Path=PackageId, Mode=OneTime}" FontSize="14"
                                                        HorizontalAlignment="Stretch" />
                                             <TextBlock Text="{Binding Path=Version, Mode=OneTime}" FontSize="12"
@@ -77,7 +81,22 @@
                     </TreeView.Resources>
                 </TreeView>
             </TabItem>
-            <TabItem Header="{Binding Source={x:Static localization:Strings.VersionConflicts}, Converter={StaticResource upperCaseConverter}}">
+            <TabItem>
+                <TabItem.Header>
+                    <DockPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <Border DockPanel.Dock="Right" CornerRadius="10" MinWidth="20" Height="20" Background="{StaticResource WarningYellow}"
+                                Visibility="{Binding Path=VersionConflictsCount, Converter={StaticResource zeroToCollapsedConverter}}"
+                                Margin="8,0,0,0" HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding Path=VersionConflictsCount}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource MaterialDesignBackground}"
+                                       Margin="4" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <TextBlock Text="{Binding Source={x:Static localization:Strings.VersionConflicts}, Converter={StaticResource upperCaseConverter}}"
+                                   FontSize="{Binding Path=(mde:TabControlAssist.TabHeaderFontSize), RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type TabItem}}}"
+                                   FontWeight="{Binding Path=(mde:TabControlAssist.TabHeaderFontWeight), RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type TabItem}}}"
+                                   Foreground="{Binding Path=(mde:TabControlAssist.TabHeaderForeground), RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type TabItem}}}"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </DockPanel>
+                </TabItem.Header>
                 <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"
                               Padding="16" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                     <Grid TextBlock.Foreground="{DynamicResource MaterialDesignBody}">
@@ -95,7 +114,7 @@
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <DockPanel Margin="0,8">
-                                        <md:PackIcon DockPanel.Dock="Left" Kind="Warning" Foreground="Yellow" Width="20" Height="20" VerticalAlignment="Center" />
+                                        <md:PackIcon DockPanel.Dock="Left" Kind="Warning" Foreground="{StaticResource WarningYellow}" Width="20" Height="20" VerticalAlignment="Center" />
                                         <StackPanel Orientation="Vertical" Margin="16,0,0,0" HorizontalAlignment="Stretch" VerticalAlignment="Center">
                                             <TextBlock Text="{Binding Path=PackageId, Mode=OneTime}" FontSize="14" HorizontalAlignment="Stretch" />
                                             <ItemsControl ItemsSource="{Binding Path=Versions, Mode=OneTime}"

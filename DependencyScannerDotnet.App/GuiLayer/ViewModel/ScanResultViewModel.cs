@@ -32,6 +32,15 @@ namespace DependencyScannerDotnet.App.GuiLayer.ViewModel
                 m_scanResult = value;
 
                 OnPropertyChanged();
+                OnPropertyChanged(nameof(VersionConflictsCount));
+            }
+        }
+
+        public int VersionConflictsCount
+        {
+            get
+            {
+                return m_scanResult != null && m_scanResult.ConflictPackages != null ? m_scanResult.ConflictPackages.Count : 0;
             }
         }
 
