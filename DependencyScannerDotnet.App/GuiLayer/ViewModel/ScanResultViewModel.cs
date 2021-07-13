@@ -16,6 +16,8 @@ namespace DependencyScannerDotnet.App.GuiLayer.ViewModel
     {
         private ScanResult m_scanResult;
 
+        public ICommand BackCommand { get; init; }
+
         public ICommand ExportCommand { get; init; }
 
         public ScanResult ScanResult
@@ -36,6 +38,7 @@ namespace DependencyScannerDotnet.App.GuiLayer.ViewModel
         public ScanResultViewModel(WindowViewModel windowViewModel)
             : base(windowViewModel)
         {
+            BackCommand = new DelegateCommand(BackHandler);
             ExportCommand = new DelegateCommand(ExportHandler);
         }
 
@@ -57,6 +60,11 @@ namespace DependencyScannerDotnet.App.GuiLayer.ViewModel
         {
             DependencyScanner dependencyScanner = new(new FileSystemProjectSource(directory), new TargetFrameworkMappingService());
             ScanResult = await dependencyScanner.ScanDependenciesAsync().ConfigureAwait(false);
+        }
+
+        private void BackHandler()
+        {
+            WindowViewModel.CurrentViewModel = new SelectProjectDirectoryViewModel(WindowViewModel);
         }
 
         private async void ExportHandler()

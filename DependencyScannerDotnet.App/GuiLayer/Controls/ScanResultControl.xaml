@@ -23,7 +23,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="100*" />
         </Grid.RowDefinitions>
-        <mde:AppBar Title="{x:Static localization:Strings.AppName}">
+        <mde:AppBar Title="{x:Static localization:Strings.AppName}" ShowBackButton="True" BackCommand="{Binding Path=BackCommand}">
             <StackPanel Orientation="Horizontal" Margin="0,0,4,0" HorizontalAlignment="Right" VerticalAlignment="Center">
                 <Button Style="{StaticResource MaterialDesignToolForegroundButton}"
                         ToolTip="{x:Static localization:Strings.Export}"
