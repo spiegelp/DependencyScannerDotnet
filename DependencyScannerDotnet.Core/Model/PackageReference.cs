@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -17,7 +16,6 @@ namespace DependencyScannerDotnet.Core.Model
 
         public List<PackageReference> PackageReferences { get; set; } = new();
 
-        [JsonIgnore]
         public string Name
         {
             get
@@ -26,7 +24,6 @@ namespace DependencyScannerDotnet.Core.Model
             }
         }
 
-        [JsonIgnore]
         public List<IDependency> AllReferences
         {
             get
