@@ -9,8 +9,12 @@ namespace DependencyScannerDotnet.Core.Services
 {
     public interface IImportExportService
     {
-        Task ExportScanResultAsync(ScanResult scanResult, string fileName);
+        string ExportScanResultToJson(ScanResult scanResult);
 
-        Task<ScanResult> ImportScanResultAsync(string fileName);
+        Task ExportScanResultToFileAsync(ScanResult scanResult, string fileName);
+
+        ScanResult ImportScanResultFromJson(string json);
+
+        Task<ScanResult> ImportScanResultFromFileAsync(string fileName);
     }
 }

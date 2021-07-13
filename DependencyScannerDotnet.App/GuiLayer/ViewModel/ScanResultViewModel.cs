@@ -47,7 +47,7 @@ namespace DependencyScannerDotnet.App.GuiLayer.ViewModel
         public async Task InitImportAsync(string file)
         {
             ImportExportService importExportService = new();
-            ScanResult = await importExportService.ImportScanResultAsync(file).ConfigureAwait(false);
+            ScanResult = await importExportService.ImportScanResultFromFileAsync(file).ConfigureAwait(false);
 
             DependencyScanner dependencyScanner = new(null, null);
             dependencyScanner.FindPackageVersionConflicts(ScanResult);
@@ -104,7 +104,7 @@ namespace DependencyScannerDotnet.App.GuiLayer.ViewModel
                         await Task.Run(async () =>
                         {
                             ImportExportService importExportService = new();
-                            await importExportService.ExportScanResultAsync(ScanResult, result.File).ConfigureAwait(false);
+                            await importExportService.ExportScanResultToFileAsync(ScanResult, result.File).ConfigureAwait(false);
                         });
                     }
                     finally

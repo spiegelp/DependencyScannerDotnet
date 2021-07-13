@@ -13,21 +13,32 @@ namespace DependencyScannerDotnet.Core.Services
     {
         public ImportExportService() { }
 
-        public async Task ExportScanResultAsync(ScanResult scanResult, string fileName)
+        public string ExportScanResultToJson(ScanResult scanResult)
         {
             ScanResultExport scanResultExport = PrepareScanResultExport(scanResult);
-            string json = JsonConvert.SerializeObject(scanResultExport, CreateSettings());
+
+            return JsonConvert.SerializeObject(scanResultExport, CreateSettings());
+        }
+
+        public async Task ExportScanResultToFileAsync(ScanResult scanResult, string fileName)
+        {
+            string json = ExportScanResultToJson(scanResult);
 
             await File.WriteAllBytesAsync(fileName, Encoding.UTF8.GetBytes(json)).ConfigureAwait(false);
         }
 
-        public async Task<ScanResult> ImportScanResultAsync(string fileName)
+        public ScanResult ImportScanResultFromJson(string json)
+        {
+            ScanResultExport scanResultExport = JsonConvert.DeserializeObject<ScanResultExport>(json, CreateSettings());
+
+            return ReconstructScanResult(scanResultExport);
+        }
+
+        public async Task<ScanResult> ImportScanResultFromFileAsync(string fileName)
         {
             byte[] bytes = await File.ReadAllBytesAsync(fileName).ConfigureAwait(false);
 
-            ScanResultExport scanResultExport = JsonConvert.DeserializeObject<ScanResultExport>(Encoding.UTF8.GetString(bytes), CreateSettings());
-
-            return ReconstructScanResult(scanResultExport);
+            return ImportScanResultFromJson(Encoding.UTF8.GetString(bytes));
         }
 
         private ScanResultExport PrepareScanResultExport(ScanResult scanResult)
@@ -184,7 +195,11 @@ namespace DependencyScannerDotnet.Core.Services
                 }
             });
 
-            return new(projectsByExportId.Values.ToList(), null);
+            List<ProjectReference> projects = projectsByExportId.Values
+                .OrderBy(projectReference => projectReference.ProjectName.ToLower())
+                .ToList();
+
+            return new(projects, null);
         }
 
         private JsonSerializerSettings CreateSettings()
