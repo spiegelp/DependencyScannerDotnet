@@ -183,12 +183,70 @@ namespace DependencyScannerDotnet.Core.Services
                 scanResult.ConflictPackages.Add(new ConflictPackage(group.Key, versions));
             });
 
+            scanResult.ConflictPackages.ForEach(conflictPackage =>
+            {
+                scanResult.Projects.ForEach(project =>
+                {
+                    if (IsPackageReferencedByProject(project, conflictPackage.PackageId))
+                    {
+                        conflictPackage.Projects.Add(project);
+                    }
+                });
+
+                if (conflictPackage.Projects.Count > 1)
+                {
+                    conflictPackage.Projects = conflictPackage.Projects
+                        .OrderBy(project => project.ProjectName.ToLower())
+                        .ToList();
+                }
+            });
+
             if (scanResult.ConflictPackages.Count > 1)
             {
                 scanResult.ConflictPackages = scanResult.ConflictPackages
                     .OrderBy(conflictPackage => conflictPackage.PackageId)
                     .ToList();
             }
+        }
+
+        private bool IsPackageReferencedByProject(ProjectReference project, string packageId)
+        {
+            if (project.PackageReferences != null)
+            {
+                foreach (PackageReference childPackage in project.PackageReferences)
+                {
+                    if (IsPackageReferencedByProject(packageId, childPackage))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        private bool IsPackageReferencedByProject(string packageId, PackageReference currentPackage)
+        {
+            if (currentPackage != null)
+            {
+                if (currentPackage.PackageId == packageId)
+                {
+                    return true;
+                }
+
+                if (currentPackage.PackageReferences != null)
+                {
+                    foreach (PackageReference childPackage in currentPackage.PackageReferences)
+                    {
+                        if (IsPackageReferencedByProject(packageId, childPackage))
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            return false;
         }
     }
 }

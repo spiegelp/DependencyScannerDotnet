@@ -70,6 +70,12 @@ namespace DependencyScannerDotnet.Core.Test.Services
                 scanResult.ConflictPackages,
                 conflictPackage => Assert.True(conflictPackage.PackageId == "test.package" && conflictPackage.Versions != null && conflictPackage.Versions[0] == "1.2.0" && conflictPackage.Versions[1] == "2.0.0")
             );
+            Assert.NotNull(scanResult.ConflictPackages[0].Projects);
+            Assert.Collection(
+                scanResult.ConflictPackages[0].Projects,
+                project => Assert.Equal(projectA, project),
+                project => Assert.Equal(projectB, project)
+            );
         }
 
         public class XUnitProjectSourceMock : ProjectSource
