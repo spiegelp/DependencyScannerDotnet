@@ -81,13 +81,14 @@ namespace DependencyScannerDotnet.Core.Services
 
             foreach (XmlElement projectReferenceNode in projectReferenceNodeList)
             {
-                string referencedProjectName = projectReferenceNode.GetAttribute("Include");
-                referencedProjectName = referencedProjectName.Replace('\\', '/');
-                referencedProjectName = Path.GetFileNameWithoutExtension(referencedProjectName);
+                string referencedProjectPath = projectReferenceNode.GetAttribute("Include");
+                referencedProjectPath = referencedProjectPath.Replace('\\', '/');
+                string referencedProjectName = Path.GetFileNameWithoutExtension(referencedProjectPath);
 
                 ProjectFile referencedProject = new()
                 {
-                    ProjectName = referencedProjectName
+                    ProjectName = referencedProjectName,
+                    FullFileName = referencedProjectPath
                 };
 
                 project.ReferencedProjects.Add(referencedProject);
@@ -119,13 +120,14 @@ namespace DependencyScannerDotnet.Core.Services
 
             foreach (XmlElement projectReferenceNode in projectReferenceNodeList)
             {
-                string referencedProjectName = projectReferenceNode.GetAttribute("Include");
-                referencedProjectName = referencedProjectName.Replace('\\', '/');
-                referencedProjectName = Path.GetFileNameWithoutExtension(referencedProjectName);
+                string referencedProjectPath = projectReferenceNode.GetAttribute("Include");
+                referencedProjectPath = referencedProjectPath.Replace('\\', '/');
+                string referencedProjectName = Path.GetFileNameWithoutExtension(referencedProjectPath);
 
                 ProjectFile referencedProject = new()
                 {
-                    ProjectName = referencedProjectName
+                    ProjectName = referencedProjectName,
+                    FullFileName = referencedProjectPath
                 };
 
                 project.ReferencedProjects.Add(referencedProject);
@@ -145,8 +147,7 @@ namespace DependencyScannerDotnet.Core.Services
 
         protected void ReplaceReferencedProjects(List<ProjectFile> projects)
         {
-            Dictionary<string, ProjectFile> projectsByName = projects.ToDictionary(project => project.ProjectName);
-            Dictionary<PackageIdentity, PackageReference> packageReferenceCache = new(PackageIdentityComparer.Default);
+            Dictionary<string, ProjectFile> projectsByUniqueKey = projects.ToDictionary(project => project.UniqueKey);
 
             projects.ForEach(project =>
             {
@@ -154,7 +155,7 @@ namespace DependencyScannerDotnet.Core.Services
                 {
                     project.ReferencedProjects.ToList().ForEach(referencedProject =>
                     {
-                        if (projectsByName.TryGetValue(referencedProject.ProjectName, out ProjectFile item))
+                        if (projectsByUniqueKey.TryGetValue(referencedProject.UniqueKey, out ProjectFile item))
                         {
                             project.ReferencedProjects.Remove(referencedProject);
                             project.ReferencedProjects.Add(item);

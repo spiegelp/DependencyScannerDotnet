@@ -32,23 +32,24 @@ namespace DependencyScannerDotnet.Core.Services
 
             Dictionary<PackageIdentity, PackageReference> packageReferenceCache = new(PackageIdentityComparer.Default);
 
-            Dictionary<string, ProjectReference> projectsByName = projectFiles
+            Dictionary<string, ProjectReference> projectsByUniqueKey = projectFiles
                 .Select(projectFile => new ProjectReference()
                 {
                     ProjectName = projectFile.ProjectName,
                     Version = projectFile.Version,
                     IsNewSdkStyle = projectFile.IsNewSdkStyle,
+                    FullFileName = projectFile.FullFileName,
                     Targets = new(projectFile.Targets)
                 })
-                .ToDictionary(projectReference => projectReference.ProjectName);
+                .ToDictionary(projectReference => projectReference.UniqueKey);
 
             projectFiles.ForEach(projectFile =>
             {
                 if (projectFile.ReferencedProjects != null && projectFile.ReferencedProjects.Any())
                 {
-                    ProjectReference projectReference = projectsByName[projectFile.ProjectName];
+                    ProjectReference projectReference = projectsByUniqueKey[projectFile.UniqueKey];
 
-                    projectFile.ReferencedProjects.ForEach(referencedProjectFile => projectReference.ProjectReferences.Add(projectsByName[referencedProjectFile.ProjectName]));
+                    projectFile.ReferencedProjects.ForEach(referencedProjectFile => projectReference.ProjectReferences.Add(projectsByUniqueKey[referencedProjectFile.UniqueKey]));
                 }
             });
 
@@ -75,12 +76,12 @@ namespace DependencyScannerDotnet.Core.Services
 
                     if (packageReference != null)
                     {
-                        projectsByName[projectFile.ProjectName].PackageReferences.Add(packageReference);
+                        projectsByUniqueKey[projectFile.UniqueKey].PackageReferences.Add(packageReference);
                     }
                 }
             }
 
-            ScanResult scanResult = new(projectsByName.Values.ToList(), null);
+            ScanResult scanResult = new(projectsByUniqueKey.Values.ToList(), null);
 
             FindPackageVersionConflicts(scanResult);
 

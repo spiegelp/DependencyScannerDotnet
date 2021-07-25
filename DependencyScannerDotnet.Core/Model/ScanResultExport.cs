@@ -24,6 +24,8 @@ namespace DependencyScannerDotnet.Core.Model
 
             public bool IsNewSdkStyle { get; set; }
 
+            public string FullFileName { get; set; }
+
             public List<string> Targets { get; init; } = new();
 
             public List<Guid> ReferencedProjectIds { get; set; } = new();

@@ -57,7 +57,15 @@ namespace DependencyScannerDotnet.Core.Services
             projects.ForEach(project =>
             {
                 Guid id = Guid.NewGuid();
-                ScanResultExport.Project projectExport = new() { Id = id, ProjectName = project.ProjectName, Version = project.Version, IsNewSdkStyle = project.IsNewSdkStyle, Targets = project.Targets.ToList() };
+                ScanResultExport.Project projectExport = new()
+                {
+                    Id = id,
+                    ProjectName = project.ProjectName,
+                    Version = project.Version,
+                    IsNewSdkStyle = project.IsNewSdkStyle,
+                    FullFileName = project.FullFileName,
+                    Targets = project.Targets.ToList()
+                };
 
                 exportIdsByProject[project] = id;
                 projectsByExportId[id] = project;
@@ -158,7 +166,14 @@ namespace DependencyScannerDotnet.Core.Services
 
             scanResultExport.Projects.ForEach(projectExport =>
             {
-                ProjectReference project = new() { ProjectName = projectExport.ProjectName, Version = projectExport.Version, IsNewSdkStyle = projectExport.IsNewSdkStyle, Targets = projectExport.Targets?.ToList() };
+                ProjectReference project = new()
+                {
+                    ProjectName = projectExport.ProjectName,
+                    Version = projectExport.Version,
+                    IsNewSdkStyle = projectExport.IsNewSdkStyle,
+                    FullFileName = projectExport.FullFileName,
+                    Targets = projectExport.Targets?.ToList()
+                };
 
                 projectsByExportId[projectExport.Id] = project;
             });

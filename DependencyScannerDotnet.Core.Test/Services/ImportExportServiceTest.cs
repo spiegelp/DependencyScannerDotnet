@@ -16,7 +16,7 @@ namespace DependencyScannerDotnet.Core.Test.Services
         [Fact]
         public void ExportImport_Ok()
         {
-            ProjectReference projectLib = new() { ProjectName = "Project.Lib", Version = "1.1.0", IsNewSdkStyle = true };
+            ProjectReference projectLib = new() { ProjectName = "Project.Lib", Version = "1.1.0", IsNewSdkStyle = true, FullFileName = @"C:\temp\Project.Lib\Project.Lib.csproj" };
 
             PackageReference packageA = new() { PackageId = "package.a", Version = "2.0.4" };
             projectLib.PackageReferences.Add(packageA);
@@ -24,7 +24,7 @@ namespace DependencyScannerDotnet.Core.Test.Services
             PackageReference packageB = new() { PackageId = "package.b", Version = "1.0.2" };
             packageA.PackageReferences.Add(packageB);
 
-            ProjectReference projectApp = new() { ProjectName = "Project.App", Version = "1.0.1", IsNewSdkStyle = true };
+            ProjectReference projectApp = new() { ProjectName = "Project.App", Version = "1.0.1", IsNewSdkStyle = true, FullFileName = @"C:\temp\Project.App\Project.App.csproj" };
             projectApp.ProjectReferences.Add(projectLib);
 
             ScanResult scanResult = new(new List<ProjectReference> { projectApp, projectLib }, null);
@@ -40,8 +40,8 @@ namespace DependencyScannerDotnet.Core.Test.Services
             Assert.NotNull(scanResult.Projects);
             Assert.Collection(
                 scanResult.Projects,
-                x => Assert.True(x.ProjectName == projectApp.Name && x.Version == projectApp.Version && x.IsNewSdkStyle == projectApp.IsNewSdkStyle),
-                x => Assert.True(x.ProjectName == projectLib.Name && x.Version == projectLib.Version && x.IsNewSdkStyle == projectLib.IsNewSdkStyle)
+                x => Assert.True(x.ProjectName == projectApp.Name && x.Version == projectApp.Version && x.IsNewSdkStyle == projectApp.IsNewSdkStyle && x.FullFileName == projectApp.FullFileName),
+                x => Assert.True(x.ProjectName == projectLib.Name && x.Version == projectLib.Version && x.IsNewSdkStyle == projectLib.IsNewSdkStyle && x.FullFileName == projectLib.FullFileName)
             );
             Assert.NotNull(scanResult.Projects[0].ProjectReferences);
             Assert.Collection(

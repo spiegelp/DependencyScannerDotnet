@@ -33,6 +33,7 @@ namespace DependencyScannerDotnet.Core.Test.Services
             ProjectFile testProject = projects.Where(project => project.ProjectName == "DependencyScannerDotnet.Core.Test").SingleOrDefault();
 
             Assert.NotNull(testProject);
+            Assert.Equal(new FileInfo(Path.Combine(directoryInfo.FullName, "DependencyScannerDotnet.Core.Test.csproj")).FullName, testProject.FullFileName);
             Assert.True(testProject.IsNewSdkStyle);
             Assert.NotNull(testProject.Targets);
             Assert.Single(testProject.Targets);
@@ -40,7 +41,8 @@ namespace DependencyScannerDotnet.Core.Test.Services
             Assert.NotNull(testProject.ReferencedProjects);
             Assert.Collection(
                 testProject.ReferencedProjects,
-                project => Assert.Equal("DependencyScannerDotnet.Core", project.ProjectName)
+                project => Assert.True(project.ProjectName == "DependencyScannerDotnet.Core"
+                                            && project.FullFileName == new DirectoryInfo(Path.Combine(directoryInfo.FullName, @"..\DependencyScannerDotnet.Core\DependencyScannerDotnet.Core.csproj")).FullName)
             );
             Assert.NotNull(testProject.ReferencedPackages);
             Assert.Equal(4, testProject.ReferencedPackages.Count);

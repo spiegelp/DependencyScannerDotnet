@@ -83,6 +83,15 @@ namespace DependencyScannerDotnet.Core.Services
 
             ProjectFile project = ParseProjectFile(fileBytes);
             project.ProjectName = Path.GetFileNameWithoutExtension(projectFileInfo.Name);
+            project.FullFileName = projectFileInfo.FullName;
+
+            if (project.ReferencedProjects != null)
+            {
+                project.ReferencedProjects.ForEach(referencedProject =>
+                {
+                    referencedProject.FullFileName = new FileInfo(Path.Combine(projectFileInfo.DirectoryName, referencedProject.FullFileName)).FullName;
+                });
+            }
 
             return project;
         }

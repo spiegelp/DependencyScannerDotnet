@@ -49,6 +49,7 @@
                                         <md:PackIcon DockPanel.Dock="Left" Kind="LanguageCsharp" Width="20" Height="20" VerticalAlignment="Center" />
                                         <StackPanel Orientation="Vertical" Margin="16,0,0,0" VerticalAlignment="Center">
                                             <TextBlock Text="{Binding Path=ProjectName, Mode=OneTime}" FontSize="14"
+                                                       ToolTip="{Binding Path=FullFileName, Mode=OneTime}"
                                                        HorizontalAlignment="Stretch" />
                                             <TextBlock Text="{Binding Path=Version, Mode=OneTime}" FontSize="12"
                                                        Visibility="{Binding Path=Version, Mode=OneTime, Converter={StaticResource nullToCollapsedConverter}}"
@@ -155,7 +156,8 @@
                                                     </ItemsControl.ItemsPanel>
                                                     <ItemsControl.ItemTemplate>
                                                         <DataTemplate>
-                                                            <TextBlock Text="{Binding Path=ProjectName, Mode=OneTime}" FontSize="14" />
+                                                            <TextBlock Text="{Binding Path=ProjectName, Mode=OneTime}" FontSize="14"
+                                                                       ToolTip="{Binding Path=FullFileName, Mode=OneTime}" />
                                                         </DataTemplate>
                                                     </ItemsControl.ItemTemplate>
                                                 </ItemsControl>
