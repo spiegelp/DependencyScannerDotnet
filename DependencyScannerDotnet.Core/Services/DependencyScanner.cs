@@ -49,7 +49,22 @@ namespace DependencyScannerDotnet.Core.Services
                 {
                     ProjectReference projectReference = projectsByUniqueKey[projectFile.UniqueKey];
 
-                    projectFile.ReferencedProjects.ForEach(referencedProjectFile => projectReference.ProjectReferences.Add(projectsByUniqueKey[referencedProjectFile.UniqueKey]));
+                    projectFile.ReferencedProjects.ForEach(referencedProjectFile =>
+                    {
+                        projectsByUniqueKey.TryGetValue(referencedProjectFile.UniqueKey, out ProjectReference referencedProject);
+
+                        if (referencedProject == null)
+                        {
+                            referencedProject = new()
+                            {
+                                ProjectName = referencedProjectFile.ProjectName,
+                                Version = referencedProjectFile.Version,
+                                FullFileName = referencedProjectFile.FullFileName
+                            };
+                        }
+
+                        projectReference.ProjectReferences.Add(referencedProject);
+                    });
                 }
             });
 

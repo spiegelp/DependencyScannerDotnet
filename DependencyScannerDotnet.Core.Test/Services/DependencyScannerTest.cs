@@ -49,6 +49,23 @@ namespace DependencyScannerDotnet.Core.Test.Services
         }
 
         [Fact]
+        public async Task ScanDependenciesAsync_UnknownReferencedProject()
+        {
+            UnknownReferenceProjectSourceMock projectSource = new();
+            TargetFrameworkMappingService targetFrameworkMappingService = new();
+            DependencyScanner dependencyScanner = new(projectSource, targetFrameworkMappingService);
+
+            ScanResult result = await dependencyScanner.ScanDependenciesAsync();
+
+            Assert.NotNull(result);
+            Assert.NotNull(result.Projects);
+            Assert.Collection(
+                result.Projects,
+                project => Assert.True(project.ProjectName == "Dummy.Proj" && project.FullFileName == @"C:\temp\Dummy.Proj\Dummy.Proj.csproj")
+            );
+        }
+
+        [Fact]
         public void FindPackageVersionConflicts_Ok()
         {
             ProjectReference projectA = new() { ProjectName = "ProjectA", PackageReferences = new() { new() { PackageId = "test.package", Version = "1.2.0" }, new() { PackageId = "other.package", Version = "1.0.0" } } };
@@ -88,12 +105,41 @@ namespace DependencyScannerDotnet.Core.Test.Services
                 {
                     ProjectName = "Dummy.Proj",
                     Version = "0.0.1",
-                    IsNewSdkStyle = true
+                    IsNewSdkStyle = true,
+                    FullFileName = @"C:\temp\Project.Lib\Dummy.Proj.csproj"
                 };
 
                 projectFile.Targets.Add("net5.0");
 
                 projectFile.ReferencedPackages.Add(new("xunit", new NuGetVersion("2.4.1")));
+
+                return Task.FromResult(new List<ProjectFile>() { projectFile });
+            }
+        }
+
+        public class UnknownReferenceProjectSourceMock : ProjectSource
+        {
+            public UnknownReferenceProjectSourceMock() : base() { }
+
+            public override Task<List<ProjectFile>> LoadProjectFilesAsync()
+            {
+                ProjectFile projectFile = new()
+                {
+                    ProjectName = "Dummy.Proj",
+                    Version = "0.0.1",
+                    IsNewSdkStyle = true,
+                    FullFileName = @"C:\temp\Dummy.Proj\Dummy.Proj.csproj"
+                };
+
+                ProjectFile unknownProjectFile = new()
+                {
+                    ProjectName = "Unknown.Proj",
+                    FullFileName = @"C:\temp\Unknown.Proj\Unknown.Proj.csproj"
+                };
+
+                projectFile.Targets.Add("net5.0");
+
+                projectFile.ReferencedProjects.Add(unknownProjectFile);
 
                 return Task.FromResult(new List<ProjectFile>() { projectFile });
             }
