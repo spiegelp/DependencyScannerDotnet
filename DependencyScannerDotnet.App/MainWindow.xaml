@@ -13,13 +13,23 @@
                     FontFamily="pack://application:,,,/MaterialDesignThemes.Wpf;component/Resources/Roboto/#Roboto" FontSize="14" TextBlock.FontSize="14" FontWeight="Regular">
     <Grid>
         <md:DialogHost Identifier="mainWindowDialogHost">
-            <Grid>
-                <mde:TransitionContentControl x:Name="m_contentControl" Panel.ZIndex="1" TransitionType="FadeInAndGrow"
-                                              Content="{Binding Path=CurrentViewModel, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
-                                              HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
-                <mde:BusyOverlay x:Name="m_busyOverlay" IsBusy="{Binding Path=CurrentViewModel.IsBusy}"
-                                 Panel.ZIndex="99" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
-            </Grid>
+            <md:DrawerHost x:Name="m_drawerHost" RightDrawerBackground="{DynamicResource MaterialDesignBackground}"
+                           IsRightDrawerOpen="{Binding Path=IsRightDrawerOpen}" RightDrawerContent="{Binding Path=RightDrawerContent}">
+                <md:DrawerHost.Resources>
+                    <ResourceDictionary>
+                        <ResourceDictionary.MergedDictionaries>
+                            <ResourceDictionary Source="pack://application:,,,/GuiLayer/Resources/DrawerContentDataTemplates.xaml" />
+                        </ResourceDictionary.MergedDictionaries>
+                    </ResourceDictionary>
+                </md:DrawerHost.Resources>
+                <Grid>
+                    <mde:TransitionContentControl x:Name="m_contentControl" Panel.ZIndex="1" TransitionType="FadeInAndGrow"
+                                                  Content="{Binding Path=CurrentViewModel, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                                                  HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+                    <mde:BusyOverlay x:Name="m_busyOverlay" IsBusy="{Binding Path=CurrentViewModel.IsBusy}"
+                                     Panel.ZIndex="99" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+                </Grid>
+            </md:DrawerHost>
         </md:DialogHost>
     </Grid>
 </mde:MaterialWindow>

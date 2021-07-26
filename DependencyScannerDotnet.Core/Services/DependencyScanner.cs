@@ -26,7 +26,7 @@ namespace DependencyScannerDotnet.Core.Services
             m_targetFrameworkMappingService = targetFrameworkMappingService;
         }
 
-        public async Task<ScanResult> ScanDependenciesAsync(int maxDepth = 64)
+        public async Task<ScanResult> ScanDependenciesAsync(ScanOptions scanOptions)
         {
             List<ProjectFile> projectFiles = await m_projectSource.LoadProjectFilesAsync().ConfigureAwait(false);
 
@@ -87,7 +87,7 @@ namespace DependencyScannerDotnet.Core.Services
 
                 foreach (PackageIdentity packageIdentity in projectFile.ReferencedPackages)
                 {
-                    PackageReference packageReference = await ScanDependenciesAsync(packageIdentity, cache, repository, framework, packageReferenceCache, 0, maxDepth, cancellationToken).ConfigureAwait(false);
+                    PackageReference packageReference = await ScanDependenciesAsync(packageIdentity, cache, repository, framework, packageReferenceCache, 0, scanOptions.MaxScanDepth, cancellationToken).ConfigureAwait(false);
 
                     if (packageReference != null)
                     {
@@ -98,7 +98,7 @@ namespace DependencyScannerDotnet.Core.Services
 
             ScanResult scanResult = new(projectsByUniqueKey.Values.ToList(), null);
 
-            FindPackageVersionConflicts(scanResult);
+            FindPackageVersionConflicts(scanResult, scanOptions);
 
             return scanResult;
         }
@@ -106,14 +106,14 @@ namespace DependencyScannerDotnet.Core.Services
         private async Task<PackageReference> ScanDependenciesAsync(PackageIdentity packageIdentity, SourceCacheContext cache, SourceRepository repository, NuGetFramework framework,
             Dictionary<PackageIdentity, PackageReference> packageReferenceCache, int depth, int maxDepth, CancellationToken cancellationToken)
         {
-            if (packageReferenceCache.TryGetValue(packageIdentity, out PackageReference packageReference))
-            {
-                return packageReference;
-            }
-
             if (depth >= maxDepth)
             {
                 return null;
+            }
+
+            if (packageReferenceCache.TryGetValue(packageIdentity, out PackageReference packageReference))
+            {
+                return packageReference;
             }
 
             DependencyInfoResource dependencyInfoResource = await repository.GetResourceAsync<DependencyInfoResource>(cancellationToken).ConfigureAwait(false);
@@ -173,13 +173,11 @@ namespace DependencyScannerDotnet.Core.Services
             return globalPackageFolder;
         }
 
-        public void FindPackageVersionConflicts(ScanResult scanResult)
+        public void FindPackageVersionConflicts(ScanResult scanResult, ScanOptions scanOptions)
         {
             scanResult.ConflictPackages = new();
 
-            List<IGrouping<string, PackageReference>> conflictPackages = scanResult.Projects
-                .SelectMany(project => project.PackageReferences)
-                .Distinct()
+            List<IGrouping<string, PackageReference>> conflictPackages = FlattenPackages(scanResult.Projects, scanOptions.ScanConflictsIntoDepth)
                 .GroupBy(package => package.PackageId)
                 .Where(group => group.ToList().Select(package => package.Version).Distinct().Count() > 1)
                 .ToList();
@@ -222,6 +220,34 @@ namespace DependencyScannerDotnet.Core.Services
                 scanResult.ConflictPackages = scanResult.ConflictPackages
                     .OrderBy(conflictPackage => conflictPackage.PackageId)
                     .ToList();
+            }
+        }
+
+        private List<PackageReference> FlattenPackages(List<ProjectReference> projects, bool scanConflictsIntoDepth)
+        {
+            HashSet<PackageReference> packages = new();
+
+            projects.ForEach(project =>
+            {
+                if (project.PackageReferences != null)
+                {
+                    project.PackageReferences.ForEach(package => FlattenPackages(package, packages, scanConflictsIntoDepth, 0));
+                }
+            });
+
+            return packages.ToList();
+        }
+
+        private void FlattenPackages(PackageReference package, HashSet<PackageReference> packages, bool scanConflictsIntoDepth, int depth)
+        {
+            if (scanConflictsIntoDepth || depth == 0)
+            {
+                packages.Add(package);
+
+                if (scanConflictsIntoDepth && package.PackageReferences != null)
+                {
+                    package.PackageReferences.ForEach(childPackage => FlattenPackages(childPackage, packages, scanConflictsIntoDepth, depth + 1));
+                }
             }
         }
 

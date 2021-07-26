@@ -51,24 +51,24 @@ namespace DependencyScannerDotnet.App.GuiLayer.ViewModel
             ExportCommand = new DelegateCommand(ExportHandler);
         }
 
-        public async Task InitAsync(string directory)
+        public async Task InitAsync(string directory, ScanOptions scanOptions)
         {
-            await ScanAsync(directory).ConfigureAwait(false);
+            await ScanAsync(directory, scanOptions).ConfigureAwait(false);
         }
 
-        public async Task InitImportAsync(string file)
+        public async Task InitImportAsync(string file, ScanOptions scanOptions)
         {
             ImportExportService importExportService = new();
             ScanResult = await importExportService.ImportScanResultFromFileAsync(file).ConfigureAwait(false);
 
             DependencyScanner dependencyScanner = new(null, null);
-            dependencyScanner.FindPackageVersionConflicts(ScanResult);
+            dependencyScanner.FindPackageVersionConflicts(ScanResult, scanOptions);
         }
 
-        private async Task ScanAsync(string directory)
+        private async Task ScanAsync(string directory, ScanOptions scanOptions)
         {
             DependencyScanner dependencyScanner = new(new FileSystemProjectSource(directory), new TargetFrameworkMappingService());
-            ScanResult = await dependencyScanner.ScanDependenciesAsync().ConfigureAwait(false);
+            ScanResult = await dependencyScanner.ScanDependenciesAsync(scanOptions).ConfigureAwait(false);
         }
 
         private void BackHandler()

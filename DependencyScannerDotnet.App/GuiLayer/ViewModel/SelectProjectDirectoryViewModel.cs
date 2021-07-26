@@ -1,4 +1,5 @@
-﻿using MaterialDesignExtensions.Controls;
+﻿using DependencyScannerDotnet.Core.Model;
+using MaterialDesignExtensions.Controls;
 using NuniToolbox.Ui.Commands;
 using System;
 using System.Collections.Generic;
@@ -22,7 +23,11 @@ namespace DependencyScannerDotnet.App.GuiLayer.ViewModel
             }
         }
 
+        public ICommand OpenScanOptionsCommand { get; init; }
+
         public ICommand ScanCommand { get; init; }
+
+        public ScanOptions ScanOptions { get; init; }
 
         public string SelectedDirectory
         {
@@ -47,9 +52,12 @@ namespace DependencyScannerDotnet.App.GuiLayer.ViewModel
         public SelectProjectDirectoryViewModel(WindowViewModel windowViewModel)
             : base(windowViewModel)
         {
+            OpenScanOptionsCommand = new DelegateCommand(OpenScanOptionsHandler);
             ScanCommand = new DelegateCommand(ScanHandler);
             SelectDirectoryCommand = new DelegateCommand(SelectDirectoryHandler);
             SelectImportFileCommand = new DelegateCommand(SelectImportFileHandler);
+
+            ScanOptions = new();
 
 #if DEBUG
             string solutionDirectory = Path.Combine(new DirectoryInfo(new FileInfo(GetType().Assembly.Location).DirectoryName).FullName, @"..\..\..\..\");
@@ -60,6 +68,11 @@ namespace DependencyScannerDotnet.App.GuiLayer.ViewModel
                 SelectedDirectory = directory.FullName;
             }
 #endif
+        }
+
+        private void OpenScanOptionsHandler()
+        {
+            WindowViewModel.OpenInRightDrawer(new ScanOptionsViewModel(ScanOptions));
         }
 
         private async void ScanHandler()
@@ -75,7 +88,7 @@ namespace DependencyScannerDotnet.App.GuiLayer.ViewModel
                     nextViewModel = await Task.Run(async () =>
                     {
                         ScanResultViewModel viewModel = new(WindowViewModel);
-                        await viewModel.InitAsync(SelectedDirectory).ConfigureAwait(false);
+                        await viewModel.InitAsync(SelectedDirectory, ScanOptions).ConfigureAwait(false);
 
                         return viewModel;
                     });
@@ -129,7 +142,7 @@ namespace DependencyScannerDotnet.App.GuiLayer.ViewModel
                     nextViewModel = await Task.Run(async () =>
                     {
                         ScanResultViewModel viewModel = new(WindowViewModel);
-                        await viewModel.InitImportAsync(result.File).ConfigureAwait(false);
+                        await viewModel.InitImportAsync(result.File, ScanOptions).ConfigureAwait(false);
 
                         return viewModel;
                     });

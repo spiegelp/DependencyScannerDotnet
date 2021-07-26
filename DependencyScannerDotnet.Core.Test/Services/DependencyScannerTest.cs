@@ -21,7 +21,7 @@ namespace DependencyScannerDotnet.Core.Test.Services
             TargetFrameworkMappingService targetFrameworkMappingService = new();
             DependencyScanner dependencyScanner = new(projectSource, targetFrameworkMappingService);
 
-            ScanResult result = await dependencyScanner.ScanDependenciesAsync();
+            ScanResult result = await dependencyScanner.ScanDependenciesAsync(new());
 
             Assert.NotNull(result);
 
@@ -55,7 +55,7 @@ namespace DependencyScannerDotnet.Core.Test.Services
             TargetFrameworkMappingService targetFrameworkMappingService = new();
             DependencyScanner dependencyScanner = new(projectSource, targetFrameworkMappingService);
 
-            ScanResult result = await dependencyScanner.ScanDependenciesAsync();
+            ScanResult result = await dependencyScanner.ScanDependenciesAsync(new());
 
             Assert.NotNull(result);
             Assert.NotNull(result.Projects);
@@ -77,7 +77,7 @@ namespace DependencyScannerDotnet.Core.Test.Services
 
             DependencyScanner dependencyScanner = new(null, null);
 
-            dependencyScanner.FindPackageVersionConflicts(scanResult);
+            dependencyScanner.FindPackageVersionConflicts(scanResult, new());
 
             Assert.True(projectA.PackageReferences[0].HasPotentialVersionConflict);
             Assert.False(projectA.PackageReferences[1].HasPotentialVersionConflict);

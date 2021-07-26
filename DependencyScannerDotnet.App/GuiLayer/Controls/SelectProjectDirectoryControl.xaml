@@ -20,7 +20,16 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="100*" />
         </Grid.RowDefinitions>
-        <mde:AppBar Title="{x:Static localization:Strings.AppName}" />
+        <mde:AppBar Title="{x:Static localization:Strings.AppName}">
+            <StackPanel Orientation="Horizontal" Margin="0,0,4,0" HorizontalAlignment="Right" VerticalAlignment="Center">
+                <Button Style="{StaticResource MaterialDesignToolForegroundButton}"
+                        ToolTip="{x:Static localization:Strings.ScanOptions}"
+                        md:RippleAssist.Feedback="{DynamicResource PrimaryHueMidForegroundBrush}" Margin="8,0"
+                        Command="{Binding Path=OpenScanOptionsCommand}">
+                    <md:PackIcon Kind="Settings" Width="24" Height="24" />
+                </Button>
+            </StackPanel>
+        </mde:AppBar>
         <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto"
                       Padding="16" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
             <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" VerticalAlignment="Center" Width="600">

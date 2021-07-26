@@ -27,8 +27,11 @@ namespace DependencyScannerDotnet.App
 
             InitializeComponent();
 
+            m_drawerHost.DataContext = viewModel;
             m_contentControl.DataContext = viewModel;
             m_busyOverlay.DataContext = viewModel;
+
+            m_drawerHost.DrawerClosing += viewModel.DrawerClosingHandler;
         }
     }
 }

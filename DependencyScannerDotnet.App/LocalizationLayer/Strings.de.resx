@@ -126,6 +126,9 @@
   <data name="Import" xml:space="preserve">
     <value>Import</value>
   </data>
+  <data name="MaximumScanDepth" xml:space="preserve">
+    <value>Maximale Scantiefe</value>
+  </data>
   <data name="No" xml:space="preserve">
     <value>Nein</value>
   </data>
@@ -143,6 +146,12 @@
   </data>
   <data name="Scan" xml:space="preserve">
     <value>Scannen</value>
+  </data>
+  <data name="ScanConflictsIntoDepth" xml:space="preserve">
+    <value>Konflikte in die Tiefe scannen</value>
+  </data>
+  <data name="ScanOptions" xml:space="preserve">
+    <value>Scanoptionen</value>
   </data>
   <data name="SelectDirectoryToScanForCsprojFiles" xml:space="preserve">
     <value>Scanverzeichnis für .csproj-Dateien auswählen</value>

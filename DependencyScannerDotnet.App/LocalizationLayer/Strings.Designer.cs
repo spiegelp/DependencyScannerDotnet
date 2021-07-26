@@ -97,6 +97,15 @@ namespace DependencyScannerDotnet.App.LocalizationLayer {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Maximum scan depth ähnelt.
+        /// </summary>
+        public static string MaximumScanDepth {
+            get {
+                return ResourceManager.GetString("MaximumScanDepth", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die No ähnelt.
         /// </summary>
         public static string No {
@@ -147,6 +156,24 @@ namespace DependencyScannerDotnet.App.LocalizationLayer {
         public static string Scan {
             get {
                 return ResourceManager.GetString("Scan", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Scan conflicts into depth ähnelt.
+        /// </summary>
+        public static string ScanConflictsIntoDepth {
+            get {
+                return ResourceManager.GetString("ScanConflictsIntoDepth", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Scan options ähnelt.
+        /// </summary>
+        public static string ScanOptions {
+            get {
+                return ResourceManager.GetString("ScanOptions", resourceCulture);
             }
         }
         
