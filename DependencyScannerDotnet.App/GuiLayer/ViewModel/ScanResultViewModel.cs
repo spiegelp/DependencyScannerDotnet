@@ -20,6 +20,8 @@ namespace DependencyScannerDotnet.App.GuiLayer.ViewModel
 
         public ICommand ExportCommand { get; init; }
 
+        public ICommand OpenConflictPackageCommand { get; init; }
+
         public ScanResult ScanResult
         {
             get
@@ -49,6 +51,7 @@ namespace DependencyScannerDotnet.App.GuiLayer.ViewModel
         {
             BackCommand = new DelegateCommand(BackHandler);
             ExportCommand = new DelegateCommand(ExportHandler);
+            OpenConflictPackageCommand = new DelegateCommand<ConflictPackage>(OpenConflictPackageHandler);
         }
 
         public async Task InitAsync(string directory, ScanOptions scanOptions)
@@ -129,6 +132,14 @@ namespace DependencyScannerDotnet.App.GuiLayer.ViewModel
                         IsBusy = false;
                     }
                 }
+            }
+        }
+
+        public void OpenConflictPackageHandler(ConflictPackage conflictPackage)
+        {
+            if (conflictPackage != null)
+            {
+                WindowViewModel.OpenInRightDrawer(new ConflictPackageViewModel(conflictPackage));
             }
         }
     }

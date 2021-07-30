@@ -115,8 +115,9 @@
                             </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Grid Background="Transparent" HorizontalAlignment="Stretch">
-                                        <Border Background="{Binding Path=Foreground, Converter={StaticResource brushRoundConverter}, ElementName=packageIdTextBlock}" HorizontalAlignment="Stretch">
+                                    <Grid Background="Transparent" HorizontalAlignment="Stretch" Height="72">
+                                        <Border Background="{Binding Path=Foreground, Converter={StaticResource brushRoundConverter}, ElementName=packageIdTextBlock}"
+                                                HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                                             <Border.Style>
                                                 <Style TargetType="Border">
                                                     <Style.Triggers>
@@ -130,39 +131,25 @@
                                                 </Style>
                                             </Border.Style>
                                         </Border>
-                                        <DockPanel Margin="0,8" HorizontalAlignment="Stretch">
-                                            <md:PackIcon DockPanel.Dock="Left" Kind="Warning" Foreground="{StaticResource WarningYellow}" Width="32" Height="32" VerticalAlignment="Center" />
-                                            <StackPanel Orientation="Vertical" Margin="16,0,0,0" HorizontalAlignment="Stretch" VerticalAlignment="Center">
-                                                <TextBlock x:Name="packageIdTextBlock" Text="{Binding Path=PackageId, Mode=OneTime}" FontSize="14" HorizontalAlignment="Stretch" />
-                                                <ItemsControl ItemsSource="{Binding Path=Versions, Mode=OneTime}"
-                                                              Margin="0,4,0,0" HorizontalAlignment="Stretch" VerticalAlignment="Top">
-                                                    <ItemsControl.ItemsPanel>
-                                                        <ItemsPanelTemplate>
-                                                            <StackPanel IsItemsHost="True" Orientation="Vertical" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
-                                                        </ItemsPanelTemplate>
-                                                    </ItemsControl.ItemsPanel>
-                                                    <ItemsControl.ItemTemplate>
-                                                        <DataTemplate>
-                                                            <TextBlock Text="{Binding Mode=OneTime}" FontSize="12" />
-                                                        </DataTemplate>
-                                                    </ItemsControl.ItemTemplate>
-                                                </ItemsControl>
-                                                <ItemsControl ItemsSource="{Binding Path=Projects, Mode=OneTime}"
-                                                              Margin="0,8,0,0" HorizontalAlignment="Stretch" VerticalAlignment="Top">
-                                                    <ItemsControl.ItemsPanel>
-                                                        <ItemsPanelTemplate>
-                                                            <StackPanel IsItemsHost="True" Orientation="Vertical" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
-                                                        </ItemsPanelTemplate>
-                                                    </ItemsControl.ItemsPanel>
-                                                    <ItemsControl.ItemTemplate>
-                                                        <DataTemplate>
-                                                            <TextBlock Text="{Binding Path=ProjectName, Mode=OneTime}" FontSize="14"
-                                                                       ToolTip="{Binding Path=FullFileName, Mode=OneTime}" />
-                                                        </DataTemplate>
-                                                    </ItemsControl.ItemTemplate>
-                                                </ItemsControl>
-                                            </StackPanel>
-                                        </DockPanel>
+                                        <Button Style="{StaticResource ListItemButtonStyle}"
+                                                Command="{Binding Path=DataContext.OpenConflictPackageCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ItemsControl}}"
+                                                CommandParameter="{Binding}">
+                                            <DockPanel Margin="16,0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                                                <md:PackIcon DockPanel.Dock="Left" Kind="Package" Height="24" Width="24" VerticalAlignment="Center" />
+                                                <StackPanel Orientation="Vertical" Margin="32,0,0,0" HorizontalAlignment="Stretch" VerticalAlignment="Center">
+                                                    <TextBlock x:Name="packageIdTextBlock" Text="{Binding Path=PackageId, Mode=OneTime}" FontSize="16"
+                                                               HorizontalAlignment="Left" />
+                                                    <StackPanel Orientation="Horizontal" TextBlock.FontSize="14"
+                                                                Margin="0,4,0,0" HorizontalAlignment="Left">
+                                                        <TextBlock Text="{Binding Path=Versions.Count, Mode=OneTime}" />
+                                                        <TextBlock Text="{x:Static localization:Strings.Versions}" Margin="4,0,0,0" />
+                                                        <TextBlock Text="," />
+                                                        <TextBlock Text="{Binding Path=Projects.Count, Mode=OneTime}" Margin="4,0,0,0" />
+                                                        <TextBlock Text="{x:Static localization:Strings.Projects}" Margin="4,0,0,0" />
+                                                    </StackPanel>
+                                                </StackPanel>
+                                            </DockPanel>
+                                        </Button>
                                     </Grid>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>

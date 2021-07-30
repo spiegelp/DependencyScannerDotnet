@@ -151,6 +151,15 @@ namespace DependencyScannerDotnet.App.LocalizationLayer {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die .NET projects ähnelt.
+        /// </summary>
+        public static string Projects {
+            get {
+                return ResourceManager.GetString("Projects", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Scan ähnelt.
         /// </summary>
         public static string Scan {
@@ -192,6 +201,15 @@ namespace DependencyScannerDotnet.App.LocalizationLayer {
         public static string VersionConflicts {
             get {
                 return ResourceManager.GetString("VersionConflicts", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Versions ähnelt.
+        /// </summary>
+        public static string Versions {
+            get {
+                return ResourceManager.GetString("Versions", resourceCulture);
             }
         }
         

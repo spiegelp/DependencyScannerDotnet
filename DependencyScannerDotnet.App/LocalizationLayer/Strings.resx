@@ -147,6 +147,9 @@
   <data name="OverwriteExistingFile" xml:space="preserve">
     <value>Overwrite existing file?</value>
   </data>
+  <data name="Projects" xml:space="preserve">
+    <value>.NET projects</value>
+  </data>
   <data name="Scan" xml:space="preserve">
     <value>Scan</value>
   </data>
@@ -161,6 +164,9 @@
   </data>
   <data name="VersionConflicts" xml:space="preserve">
     <value>Version conflicts</value>
+  </data>
+  <data name="Versions" xml:space="preserve">
+    <value>Versions</value>
   </data>
   <data name="Yes" xml:space="preserve">
     <value>Yes</value>
