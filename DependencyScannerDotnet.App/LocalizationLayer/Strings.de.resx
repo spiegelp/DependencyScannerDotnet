@@ -144,6 +144,9 @@
   <data name="OverwriteExistingFile" xml:space="preserve">
     <value>Bestehende Datei überschreiben?</value>
   </data>
+  <data name="PackageSearch" xml:space="preserve">
+    <value>Packagesuche</value>
+  </data>
   <data name="Projects" xml:space="preserve">
     <value>.NET Projekte</value>
   </data>

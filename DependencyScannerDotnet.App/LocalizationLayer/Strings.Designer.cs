@@ -151,6 +151,15 @@ namespace DependencyScannerDotnet.App.LocalizationLayer {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Package search ähnelt.
+        /// </summary>
+        public static string PackageSearch {
+            get {
+                return ResourceManager.GetString("PackageSearch", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die .NET projects ähnelt.
         /// </summary>
         public static string Projects {

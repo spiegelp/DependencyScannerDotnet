@@ -1,6 +1,7 @@
 ﻿using DependencyScannerDotnet.Core.Model;
 using DependencyScannerDotnet.Core.Services;
 using MaterialDesignExtensions.Controls;
+using NuniToolbox.Collections;
 using NuniToolbox.Ui.Commands;
 using System;
 using System.Collections.Generic;
@@ -38,6 +39,10 @@ namespace DependencyScannerDotnet.App.GuiLayer.ViewModel
             }
         }
 
+        public ICommand SearchPackagesCommand { get; init; }
+
+        public ExtendedObservableCollection<PackageWithReferencingProjects> SearchPackagesResult { get; init; }
+
         public int VersionConflictsCount
         {
             get
@@ -52,6 +57,9 @@ namespace DependencyScannerDotnet.App.GuiLayer.ViewModel
             BackCommand = new DelegateCommand(BackHandler);
             ExportCommand = new DelegateCommand(ExportHandler);
             OpenConflictPackageCommand = new DelegateCommand<ConflictPackage>(OpenConflictPackageHandler);
+            SearchPackagesCommand = new DelegateCommand<string>(SearchPackagesHandler);
+
+            SearchPackagesResult = new();
         }
 
         public async Task InitAsync(string directory, ScanOptions scanOptions)
@@ -140,6 +148,27 @@ namespace DependencyScannerDotnet.App.GuiLayer.ViewModel
             if (conflictPackage != null)
             {
                 WindowViewModel.OpenInRightDrawer(new ConflictPackageViewModel(conflictPackage));
+            }
+        }
+
+        public async void SearchPackagesHandler(string searchTerm)
+        {
+            try
+            {
+                IsBusy = true;
+
+                List<PackageWithReferencingProjects> result = await Task.Run(() =>
+                {
+                    DependencyScanner dependencyScanner = new(null, null);
+
+                    return dependencyScanner.SearchPackagesInProjects(ScanResult, searchTerm);
+                });
+
+                RunWithinUiThread(() => SearchPackagesResult.ReplaceWith(result));
+            }
+            finally
+            {
+                IsBusy = false;
             }
         }
     }

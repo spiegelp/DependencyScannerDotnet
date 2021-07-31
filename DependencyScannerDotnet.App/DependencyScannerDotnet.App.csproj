@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="MaterialDesignExtensions" Version="4.0.0-a02" />
+    <PackageReference Include="NuniToolbox" Version="1.0.0" />
     <PackageReference Include="NuniToolbox.Ui" Version="1.0.0" />
   </ItemGroup>
 

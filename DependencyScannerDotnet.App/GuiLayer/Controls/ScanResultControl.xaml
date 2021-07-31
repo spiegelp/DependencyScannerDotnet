@@ -157,6 +157,63 @@
                     </Grid>
                 </ScrollViewer>
             </TabItem>
+            <TabItem Header="{Binding Source={x:Static localization:Strings.PackageSearch}, Converter={StaticResource upperCaseConverter}}">
+                <DockPanel TextBlock.Foreground="{DynamicResource MaterialDesignBody}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                    <Border DockPanel.Dock="Top" BorderBrush="{DynamicResource MaterialDesignBody}" BorderThickness="1" CornerRadius="4" SnapsToDevicePixels="True"
+                            Padding="8,4" Margin="0,16,0,0" Width="350">
+                        <TextBox x:Name="packageSearchTextBox" FontSize="14" Foreground="{DynamicResource MaterialDesignBody}" md:TextFieldAssist.HasLeadingIcon="True" md:TextFieldAssist.LeadingIcon="Search"
+                                 HorizontalAlignment="Stretch" VerticalAlignment="Center">
+                            <TextBox.InputBindings>
+                                <KeyBinding Command="{Binding SearchPackagesCommand}" CommandParameter="{Binding Path=Text, ElementName=packageSearchTextBox}" Key="Return" />
+                            </TextBox.InputBindings>
+                        </TextBox>
+                    </Border>
+                    <TreeView ItemsSource="{Binding Path=SearchPackagesResult}"
+                              HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Padding="16"
+                              ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto">
+                        <TreeView.ItemContainerStyle>
+                            <Style TargetType="TreeViewItem" BasedOn="{StaticResource MaterialDesignTreeViewItem}">
+                                <Setter Property="IsExpanded" Value="True" />
+                            </Style>
+                        </TreeView.ItemContainerStyle>
+                        <TreeView.Resources>
+                            <HierarchicalDataTemplate DataType="{x:Type coreModel:PackageWithReferencingProjects}" ItemsSource="{Binding Path=Projects, Mode=OneTime}">
+                                <TreeViewItem Padding="0">
+                                    <TreeViewItem.Header>
+                                        <DockPanel>
+                                            <md:PackIcon DockPanel.Dock="Left" Kind="Package" Width="20" Height="20" Margin="0,8,16,8" VerticalAlignment="Center" />
+                                            <StackPanel Orientation="Vertical" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Path=Package.PackageId, Mode=OneTime}" FontSize="14"
+                                                           HorizontalAlignment="Stretch" />
+                                                <TextBlock Text="{Binding Path=Package.Version, Mode=OneTime}" FontSize="12"
+                                                           Visibility="{Binding Path=Package.Version, Mode=OneTime, Converter={StaticResource nullToCollapsedConverter}}"
+                                                           Margin="0,4" HorizontalAlignment="Stretch" />
+                                            </StackPanel>
+                                        </DockPanel>
+                                    </TreeViewItem.Header>
+                                </TreeViewItem>
+                            </HierarchicalDataTemplate>
+                            <HierarchicalDataTemplate DataType="{x:Type coreModel:ProjectReference}">
+                                <TreeViewItem Padding="0" IsExpanded="True">
+                                    <TreeViewItem.Header>
+                                        <DockPanel>
+                                            <md:PackIcon DockPanel.Dock="Left" Kind="LanguageCsharp" Width="20" Height="20" VerticalAlignment="Center" />
+                                            <StackPanel Orientation="Vertical" Margin="16,0,0,0" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Path=ProjectName, Mode=OneTime}" FontSize="14"
+                                                           ToolTip="{Binding Path=FullFileName, Mode=OneTime}"
+                                                           HorizontalAlignment="Stretch" />
+                                                <TextBlock Text="{Binding Path=Version, Mode=OneTime}" FontSize="12"
+                                                           Visibility="{Binding Path=Version, Mode=OneTime, Converter={StaticResource nullToCollapsedConverter}}"
+                                                           Margin="0,4,0,0" HorizontalAlignment="Stretch" />
+                                            </StackPanel>
+                                        </DockPanel>
+                                    </TreeViewItem.Header>
+                                </TreeViewItem>
+                            </HierarchicalDataTemplate>
+                        </TreeView.Resources>
+                    </TreeView>
+                </DockPanel>
+            </TabItem>
         </TabControl>
     </Grid>
 </UserControl>
