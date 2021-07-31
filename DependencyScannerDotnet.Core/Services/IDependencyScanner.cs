@@ -12,5 +12,7 @@ namespace DependencyScannerDotnet.Core.Services
         Task<ScanResult> ScanDependenciesAsync(ScanOptions scanOptions);
 
         void FindPackageVersionConflicts(ScanResult scanResult, ScanOptions scanOptions);
+
+        List<PackageWithReferencingProjects> SearchPackagesInProjects(ScanResult scanResult, string searchTerm);
     }
 }

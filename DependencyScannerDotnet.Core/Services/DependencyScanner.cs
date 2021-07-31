@@ -229,13 +229,27 @@ namespace DependencyScannerDotnet.Core.Services
 
             projects.ForEach(project =>
             {
-                if (project.PackageReferences != null)
-                {
-                    project.PackageReferences.ForEach(package => FlattenPackages(package, packages, scanConflictsIntoDepth, 0));
-                }
+                FlattenPackages(project, packages, scanConflictsIntoDepth);
             });
 
             return packages.ToList();
+        }
+
+        private List<PackageReference> FlattenPackages(ProjectReference project, bool scanConflictsIntoDepth)
+        {
+            HashSet<PackageReference> packages = new();
+
+            FlattenPackages(project, packages, scanConflictsIntoDepth);
+
+            return packages.ToList();
+        }
+
+        private void FlattenPackages(ProjectReference project, HashSet<PackageReference> packages, bool scanConflictsIntoDepth)
+        {
+            if (project.PackageReferences != null)
+            {
+                project.PackageReferences.ForEach(package => FlattenPackages(package, packages, scanConflictsIntoDepth, 0));
+            }
         }
 
         private void FlattenPackages(PackageReference package, HashSet<PackageReference> packages, bool scanConflictsIntoDepth, int depth)
@@ -289,6 +303,46 @@ namespace DependencyScannerDotnet.Core.Services
             }
 
             return false;
+        }
+
+        public List<PackageWithReferencingProjects> SearchPackagesInProjects(ScanResult scanResult, string searchTerm)
+        {
+            Dictionary<PackageReference, List<ProjectReference>> projectsByPackage = new();
+
+            if (!string.IsNullOrWhiteSpace(searchTerm) && scanResult.Projects != null)
+            {
+                searchTerm = searchTerm.ToLower();
+
+                scanResult.Projects.ForEach(project =>
+                {
+                    List<PackageReference> packages = FlattenPackages(project, true)
+                        .Where(package => package.PackageId.ToLower().Contains(searchTerm))
+                        .ToList();
+
+                    if (packages.Any())
+                    {
+                        packages.ForEach(package =>
+                        {
+                            if (!projectsByPackage.TryGetValue(package, out List<ProjectReference> projects))
+                            {
+                                projects = new();
+                                projectsByPackage[package] = projects;
+                            }
+
+                            projects.Add(project);
+                        });
+                    }
+                });
+            }
+
+            return projectsByPackage
+                .Select(entry => new {
+                    Key = new PackageIdentity(entry.Key.PackageId, NuGetVersion.Parse(entry.Key.Version)),
+                    PackageSearchResult = new PackageWithReferencingProjects(entry.Key, entry.Value.OrderBy(project => project.ProjectName.ToLower()).ToList())
+                })
+                .OrderBy(x => x.Key, PackageIdentityComparer.Default)
+                .Select(x => x.PackageSearchResult)
+                .ToList();
         }
     }
 }

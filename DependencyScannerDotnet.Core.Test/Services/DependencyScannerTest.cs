@@ -95,6 +95,49 @@ namespace DependencyScannerDotnet.Core.Test.Services
             );
         }
 
+        [Fact]
+        public void SearchPackagesInProjects_Ok()
+        {
+            PackageReference nuGetFrameworks5100 = new() { PackageId = "NuGet.Frameworks", Version = "5.10.0" };
+            PackageReference nuGetCommon5100 = new() { PackageId = "NuGet.Common", Version = "5.10.0", PackageReferences = new() { nuGetFrameworks5100 } };
+            PackageReference xunitCore = new() { PackageId = "xunit.core", Version = "2.4.1" };
+
+            ProjectReference dummyProjA = new() { ProjectName = "Dummy.Proj.A", Version = "1.0.0", PackageReferences = new() { nuGetFrameworks5100 } };
+            ProjectReference dummyProjB = new() { ProjectName = "Dummy.Proj.B", Version = "1.0.0", PackageReferences = new() { nuGetCommon5100, xunitCore } };
+
+            ScanResult scanResult = new(new() { dummyProjA, dummyProjB }, null);
+
+            DependencyScanner dependencyScanner = new(null, null);
+
+            List<PackageWithReferencingProjects> result = dependencyScanner.SearchPackagesInProjects(scanResult, "uget");
+
+            Assert.NotNull(result);
+            Assert.Collection(
+                result,
+                package =>
+                {
+                    Assert.Equal("NuGet.Common", package.Package.PackageId);
+                    Assert.Equal("5.10.0", package.Package.Version);
+                    Assert.NotNull(package.Projects);
+                    Assert.Collection(
+                        package.Projects,
+                        project => Assert.Equal(dummyProjB, project)
+                    );
+                },
+                package =>
+                {
+                    Assert.Equal("NuGet.Frameworks", package.Package.PackageId);
+                    Assert.Equal("5.10.0", package.Package.Version);
+                    Assert.NotNull(package.Projects);
+                    Assert.Collection(
+                        package.Projects,
+                        project => Assert.Equal(dummyProjA, project),
+                        project => Assert.Equal(dummyProjB, project)
+                    );
+                }
+            );
+        }
+
         public class XUnitProjectSourceMock : ProjectSource
         {
             public XUnitProjectSourceMock() : base() { }
