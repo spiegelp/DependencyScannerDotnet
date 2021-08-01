@@ -1,5 +1,6 @@
 ﻿using DependencyScannerDotnet.Core.Model;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.Protocol;
@@ -72,7 +73,7 @@ namespace DependencyScannerDotnet.Core.Services
 
             using SourceCacheContext cache = new();
 
-            SourceRepository repository = Repository.Factory.GetCoreV3(GetPackageSourceStr(), FeedType.FileSystemV3);
+            List<SourceRepository> sourceRepositories = GetSourceRepositories();
 
             foreach (ProjectFile projectFile in projectFiles)
             {
@@ -87,7 +88,7 @@ namespace DependencyScannerDotnet.Core.Services
 
                 foreach (PackageIdentity packageIdentity in projectFile.ReferencedPackages)
                 {
-                    PackageReference packageReference = await ScanDependenciesAsync(packageIdentity, cache, repository, framework, packageReferenceCache, 0, scanOptions.MaxScanDepth, cancellationToken).ConfigureAwait(false);
+                    PackageReference packageReference = await ScanDependenciesAsync(packageIdentity, cache, sourceRepositories, framework, packageReferenceCache, 0, scanOptions.MaxScanDepth, cancellationToken).ConfigureAwait(false);
 
                     if (packageReference != null)
                     {
@@ -103,7 +104,7 @@ namespace DependencyScannerDotnet.Core.Services
             return scanResult;
         }
 
-        private async Task<PackageReference> ScanDependenciesAsync(PackageIdentity packageIdentity, SourceCacheContext cache, SourceRepository repository, NuGetFramework framework,
+        private async Task<PackageReference> ScanDependenciesAsync(PackageIdentity packageIdentity, SourceCacheContext cache, List<SourceRepository> sourceRepositories, NuGetFramework framework,
             Dictionary<PackageIdentity, PackageReference> packageReferenceCache, int depth, int maxDepth, CancellationToken cancellationToken)
         {
             if (depth >= maxDepth)
@@ -116,13 +117,21 @@ namespace DependencyScannerDotnet.Core.Services
                 return packageReference;
             }
 
-            DependencyInfoResource dependencyInfoResource = await repository.GetResourceAsync<DependencyInfoResource>(cancellationToken).ConfigureAwait(false);
+            SourcePackageDependencyInfo dependencyInfo = null;
+            int i = 0;
 
-            SourcePackageDependencyInfo dependencyInfo = await dependencyInfoResource.ResolvePackage(packageIdentity, framework, cache, NullLogger.Instance, cancellationToken).ConfigureAwait(false);
-
-            if (dependencyInfo == null || dependencyInfo.Dependencies == null || !dependencyInfo.Dependencies.Any())
+            while (dependencyInfo == null && i < sourceRepositories.Count)
             {
-                dependencyInfo = await dependencyInfoResource.ResolvePackage(packageIdentity, NuGetFramework.AnyFramework, cache, NullLogger.Instance, cancellationToken).ConfigureAwait(false);
+                DependencyInfoResource dependencyInfoResource = await sourceRepositories[i].GetResourceAsync<DependencyInfoResource>(cancellationToken).ConfigureAwait(false);
+
+                dependencyInfo = await dependencyInfoResource.ResolvePackage(packageIdentity, framework, cache, NullLogger.Instance, cancellationToken).ConfigureAwait(false);
+
+                if (dependencyInfo == null || dependencyInfo.Dependencies == null || !dependencyInfo.Dependencies.Any())
+                {
+                    dependencyInfo = await dependencyInfoResource.ResolvePackage(packageIdentity, NuGetFramework.AnyFramework, cache, NullLogger.Instance, cancellationToken).ConfigureAwait(false);
+                }
+
+                i++;
             }
 
             if (dependencyInfo != null)
@@ -139,7 +148,7 @@ namespace DependencyScannerDotnet.Core.Services
                 {
                     PackageIdentity childPackageIdentity = new(packageDependency.Id, packageDependency.VersionRange.MinVersion);
 
-                    PackageReference childPackageReference = await ScanDependenciesAsync(childPackageIdentity, cache, repository, framework, packageReferenceCache, depth + 1, maxDepth, cancellationToken).ConfigureAwait(false);
+                    PackageReference childPackageReference = await ScanDependenciesAsync(childPackageIdentity, cache, sourceRepositories, framework, packageReferenceCache, depth + 1, maxDepth, cancellationToken).ConfigureAwait(false);
 
                     if (childPackageReference != null)
                     {
@@ -159,18 +168,43 @@ namespace DependencyScannerDotnet.Core.Services
             }
         }
 
-        private string GetPackageSourceStr()
+        private List<SourceRepository> GetSourceRepositories()
         {
-            // https://api.nuget.org/v3/index.json
+            List<SourceRepository> sourceRepositories = new();
 
+            // first look into the global package folder on the local disk
             string globalPackageFolder = Environment.GetEnvironmentVariable("NUGET_PACKAGES");
 
-            if (string.IsNullOrWhiteSpace(globalPackageFolder))
+            if (string.IsNullOrWhiteSpace(globalPackageFolder) || !Directory.Exists(globalPackageFolder))
             {
                 globalPackageFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".nuget", "packages");
             }
 
-            return globalPackageFolder;
+            if (!string.IsNullOrWhiteSpace(globalPackageFolder) && Directory.Exists(globalPackageFolder))
+            {
+                sourceRepositories.Add(Repository.Factory.GetCoreV3(globalPackageFolder, FeedType.FileSystemV3));
+            }
+
+            // then use the feeds from the default config
+            ISettings settings = Settings.LoadDefaultSettings(null);
+            IEnumerable<PackageSource> packageSources = PackageSourceProvider.LoadPackageSources(settings);
+            PackageSourceProvider packageSourceProvider = new(settings, packageSources);
+            SourceRepositoryProvider sourceRepositoryProvider = new(packageSourceProvider, Repository.Provider.GetCoreV3());
+
+            foreach (SourceRepository sourceRepository in sourceRepositoryProvider.GetRepositories())
+            {
+                sourceRepositories.Add(sourceRepository);
+            }
+
+            // the official feed, if it is not already there
+            string officialFeedUri = "https://api.nuget.org/v3/index.json";
+
+            if (!sourceRepositories.Any(sourceRepository => sourceRepository.PackageSource.Source != null && sourceRepository.PackageSource.Source.ToLower() == officialFeedUri))
+            {
+                sourceRepositories.Add(Repository.Factory.GetCoreV3("https://api.nuget.org/v3/index.json", FeedType.HttpV3));
+            }
+
+            return sourceRepositories;
         }
 
         public void FindPackageVersionConflicts(ScanResult scanResult, ScanOptions scanOptions)
