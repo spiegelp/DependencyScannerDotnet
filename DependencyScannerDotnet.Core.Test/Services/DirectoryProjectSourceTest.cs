@@ -9,9 +9,9 @@ using Xunit;
 
 namespace DependencyScannerDotnet.Core.Test.Services
 {
-    public class FileSystemProjectSourceTest
+    public class DirectoryProjectSourceTest
     {
-        public FileSystemProjectSourceTest() { }
+        public DirectoryProjectSourceTest() { }
 
         [Fact]
         public async Task LoadProjectFilesAsync_Ok()
@@ -24,7 +24,7 @@ namespace DependencyScannerDotnet.Core.Test.Services
                 directoryInfo = directoryInfo.Parent;
             }
 
-            FileSystemProjectSource projectSource = new(directoryInfo.FullName);
+            DirectoryProjectSource projectSource = new(directoryInfo.FullName);
             List<ProjectFile> projects = await projectSource.LoadProjectFilesAsync();
 
             Assert.NotNull(projects);
@@ -36,8 +36,10 @@ namespace DependencyScannerDotnet.Core.Test.Services
             Assert.Equal(new FileInfo(Path.Combine(directoryInfo.FullName, "DependencyScannerDotnet.Core.Test.csproj")).FullName, testProject.FullFileName);
             Assert.True(testProject.IsNewSdkStyle);
             Assert.NotNull(testProject.Targets);
-            Assert.Single(testProject.Targets);
-            Assert.Contains(testProject.Targets, target => target == "net5.0");
+            Assert.Collection(
+                testProject.Targets,
+                target => Assert.Equal("net5.0", target)
+            );
             Assert.NotNull(testProject.ReferencedProjects);
             Assert.Collection(
                 testProject.ReferencedProjects,

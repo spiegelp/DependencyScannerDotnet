@@ -78,7 +78,7 @@ namespace DependencyScannerDotnet.App.GuiLayer.ViewModel
 
         private async Task ScanAsync(string directory, ScanOptions scanOptions)
         {
-            DependencyScanner dependencyScanner = new(new FileSystemProjectSource(directory), new TargetFrameworkMappingService());
+            DependencyScanner dependencyScanner = new(new DirectoryProjectSource(directory), new TargetFrameworkMappingService());
             ScanResult = await dependencyScanner.ScanDependenciesAsync(scanOptions).ConfigureAwait(false);
         }
 
