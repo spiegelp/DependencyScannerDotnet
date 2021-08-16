@@ -62,9 +62,9 @@ namespace DependencyScannerDotnet.App.GuiLayer.ViewModel
             SearchPackagesResult = new();
         }
 
-        public async Task InitAsync(string directory, ScanOptions scanOptions)
+        public async Task InitDirectoryAsync(string directory, ScanOptions scanOptions)
         {
-            await ScanAsync(directory, scanOptions).ConfigureAwait(false);
+            await ScanDirectoryAsync(directory, scanOptions).ConfigureAwait(false);
         }
 
         public async Task InitImportAsync(string file, ScanOptions scanOptions)
@@ -76,15 +76,26 @@ namespace DependencyScannerDotnet.App.GuiLayer.ViewModel
             dependencyScanner.FindPackageVersionConflicts(ScanResult, scanOptions);
         }
 
-        private async Task ScanAsync(string directory, ScanOptions scanOptions)
+        public async Task InitSolutionAsync(string file, ScanOptions scanOptions)
+        {
+            await ScanSolutionAsync(file, scanOptions).ConfigureAwait(false);
+        }
+
+        private async Task ScanDirectoryAsync(string directory, ScanOptions scanOptions)
         {
             DependencyScanner dependencyScanner = new(new DirectoryProjectSource(directory), new TargetFrameworkMappingService());
             ScanResult = await dependencyScanner.ScanDependenciesAsync(scanOptions).ConfigureAwait(false);
         }
 
+        private async Task ScanSolutionAsync(string solution, ScanOptions scanOptions)
+        {
+            DependencyScanner dependencyScanner = new(new SolutionProjectSource(solution), new TargetFrameworkMappingService());
+            ScanResult = await dependencyScanner.ScanDependenciesAsync(scanOptions).ConfigureAwait(false);
+        }
+
         private void BackHandler()
         {
-            WindowViewModel.CurrentViewModel = new SelectProjectDirectoryViewModel(WindowViewModel);
+            WindowViewModel.CurrentViewModel = new SelectProjectSourceViewModel(WindowViewModel);
         }
 
         private async void ExportHandler()

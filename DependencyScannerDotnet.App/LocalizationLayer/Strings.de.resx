@@ -126,6 +126,9 @@
   <data name="Import" xml:space="preserve">
     <value>Import</value>
   </data>
+  <data name="ImportJsonFile" xml:space="preserve">
+    <value>.json-Datei importieren</value>
+  </data>
   <data name="MaximumScanDepth" xml:space="preserve">
     <value>Maximale Scantiefe</value>
   </data>
@@ -161,6 +164,9 @@
   </data>
   <data name="SelectDirectoryToScanForCsprojFiles" xml:space="preserve">
     <value>Scanverzeichnis für .csproj-Dateien auswählen</value>
+  </data>
+  <data name="SelectSolution" xml:space="preserve">
+    <value>Solution auswählen</value>
   </data>
   <data name="VersionConflicts" xml:space="preserve">
     <value>Versionskonflikte</value>

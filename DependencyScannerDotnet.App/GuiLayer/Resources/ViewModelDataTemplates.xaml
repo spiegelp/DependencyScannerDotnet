@@ -10,5 +10,9 @@
     <DataTemplate DataType="{x:Type viewModel:SelectProjectDirectoryViewModel}">
         <controls:SelectProjectDirectoryControl />
     </DataTemplate>
+
+    <DataTemplate DataType="{x:Type viewModel:SelectProjectSourceViewModel}">
+        <controls:SelectProjectSourceControl />
+    </DataTemplate>
     
 </ResourceDictionary>

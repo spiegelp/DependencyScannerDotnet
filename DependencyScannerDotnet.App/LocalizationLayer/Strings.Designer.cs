@@ -97,6 +97,15 @@ namespace DependencyScannerDotnet.App.LocalizationLayer {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Import .json file ähnelt.
+        /// </summary>
+        public static string ImportJsonFile {
+            get {
+                return ResourceManager.GetString("ImportJsonFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Maximum scan depth ähnelt.
         /// </summary>
         public static string MaximumScanDepth {
@@ -201,6 +210,15 @@ namespace DependencyScannerDotnet.App.LocalizationLayer {
         public static string SelectDirectoryToScanForCsprojFiles {
             get {
                 return ResourceManager.GetString("SelectDirectoryToScanForCsprojFiles", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Select solution ähnelt.
+        /// </summary>
+        public static string SelectSolution {
+            get {
+                return ResourceManager.GetString("SelectSolution", resourceCulture);
             }
         }
         

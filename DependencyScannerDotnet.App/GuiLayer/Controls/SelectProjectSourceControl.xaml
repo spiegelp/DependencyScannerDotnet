@@ -1,0 +1,54 @@
+﻿<UserControl x:Class="DependencyScannerDotnet.App.GuiLayer.Controls.SelectProjectSourceControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:mde="https://spiegelp.github.io/MaterialDesignExtensions/winfx/xaml"
+             xmlns:local="clr-namespace:DependencyScannerDotnet.App.GuiLayer.Controls"
+             xmlns:localization="clr-namespace:DependencyScannerDotnet.App.LocalizationLayer"
+             mc:Ignorable="d" 
+             d:DesignHeight="600" d:DesignWidth="800" Background="{DynamicResource MaterialDesignBackground}">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="100*" />
+        </Grid.RowDefinitions>
+        <mde:AppBar Title="{x:Static localization:Strings.AppName}">
+            <StackPanel Orientation="Horizontal" Margin="0,0,4,0" HorizontalAlignment="Right" VerticalAlignment="Center">
+                <Button Style="{StaticResource MaterialDesignToolForegroundButton}"
+                        ToolTip="{x:Static localization:Strings.ScanOptions}"
+                        md:RippleAssist.Feedback="{DynamicResource PrimaryHueMidForegroundBrush}" Margin="8,0"
+                        Command="{Binding Path=OpenScanOptionsCommand}">
+                    <md:PackIcon Kind="Settings" Width="24" Height="24" />
+                </Button>
+            </StackPanel>
+        </mde:AppBar>
+        <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto"
+                      Padding="16" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" VerticalAlignment="Center" Width="600">
+                <Button Style="{StaticResource ListButtonStyle}" Command="{Binding Path=SelectSolutionCommand}">
+                    <DockPanel Height="72" Margin="16,0">
+                        <md:PackIcon DockPanel.Dock="Left" Kind="MicrosoftVisualStudio" Width="56" Height="56" VerticalAlignment="Center" />
+                        <TextBlock Text="{x:Static localization:Strings.SelectSolution}" FontSize="18"
+                                   Margin="16,0,0,0" VerticalAlignment="Center" />
+                    </DockPanel>
+                </Button>
+                <Button Style="{StaticResource ListButtonStyle}" Command="{Binding Path=SelectDirectoryCommand}" Margin="0,16">
+                    <DockPanel Height="72" Margin="16,0">
+                        <md:PackIcon DockPanel.Dock="Left" Kind="Folder" Width="56" Height="56" VerticalAlignment="Center" />
+                        <TextBlock Text="{x:Static localization:Strings.SelectDirectoryToScanForCsprojFiles}" FontSize="18"
+                                   Margin="16,0,0,0" VerticalAlignment="Center" />
+                    </DockPanel>
+                </Button>
+                <Button Style="{StaticResource ListButtonStyle}" Command="{Binding Path=SelectImportFileCommand}">
+                    <DockPanel Height="72" Margin="16,0">
+                        <md:PackIcon DockPanel.Dock="Left" Kind="CodeJson" Width="56" Height="56" VerticalAlignment="Center" />
+                        <TextBlock Text="{x:Static localization:Strings.ImportJsonFile}" FontSize="18"
+                                   Margin="16,0,0,0" VerticalAlignment="Center" />
+                    </DockPanel>
+                </Button>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>
