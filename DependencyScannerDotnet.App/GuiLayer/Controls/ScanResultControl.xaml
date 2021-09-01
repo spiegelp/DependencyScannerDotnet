@@ -28,12 +28,20 @@
         </Grid.RowDefinitions>
         <mde:AppBar Title="{x:Static localization:Strings.AppName}" ShowBackButton="True" BackCommand="{Binding Path=BackCommand}">
             <StackPanel Orientation="Horizontal" Margin="0,0,4,0" HorizontalAlignment="Right" VerticalAlignment="Center">
-                <Button Style="{StaticResource MaterialDesignToolForegroundButton}"
-                        ToolTip="{x:Static localization:Strings.Export}"
-                        md:RippleAssist.Feedback="{DynamicResource PrimaryHueMidForegroundBrush}" Margin="8,0"
-                        Command="{Binding Path=ExportCommand}">
-                    <md:PackIcon Kind="Export" Width="24" Height="24" />
-                </Button>
+                <md:PopupBox x:Name="menuPopupButton" Foreground="{DynamicResource PrimaryHueMidForegroundBrush}" PlacementMode="BottomAndAlignRightEdges" Margin="8,0">
+                    <Border Padding="0,8">
+                        <StackPanel Orientation="Vertical">
+                            <Button Style="{StaticResource PopupMenuButtonStyle}" ToolTip="{x:Static localization:Strings.ExportAsJsonFile}"
+                                    Command="{Binding Path=ExportCommand}">
+                                <DockPanel>
+                                    <md:PackIcon DockPanel.Dock="Left" Kind="CodeJson" Width="24" Height="24" Foreground="{DynamicResource MaterialDesignBodyLight}"
+                                                 Margin="24,0,20,0" VerticalAlignment="Center" />
+                                    <TextBlock Text="{x:Static localization:Strings.Export}" FontSize="16" Margin="0,0,24,0" VerticalAlignment="Center" />
+                                </DockPanel>
+                            </Button>
+                        </StackPanel>
+                    </Border>
+                </md:PopupBox>
             </StackPanel>
         </mde:AppBar>
         <TabControl Grid.Row="1" Style="{StaticResource MaterialDesignTabControl}">
@@ -45,13 +53,13 @@
                         <HierarchicalDataTemplate DataType="{x:Type coreModel:ProjectReference}" ItemsSource="{Binding Path=AllReferences, Mode=OneTime}">
                             <TreeViewItem Padding="0" IsExpanded="True">
                                 <TreeViewItem.Header>
-                                    <DockPanel>
-                                        <md:PackIcon DockPanel.Dock="Left" Kind="LanguageCsharp" Width="20" Height="20" VerticalAlignment="Center" />
+                                    <DockPanel Height="40">
+                                        <md:PackIcon DockPanel.Dock="Left" Kind="LanguageCsharp" Width="24" Height="24" VerticalAlignment="Center" />
                                         <StackPanel Orientation="Vertical" Margin="16,0,0,0" VerticalAlignment="Center">
-                                            <TextBlock Text="{Binding Path=ProjectName, Mode=OneTime}" FontSize="14"
+                                            <TextBlock Text="{Binding Path=ProjectName, Mode=OneTime}" FontSize="16"
                                                        ToolTip="{Binding Path=FullFileName, Mode=OneTime}"
                                                        HorizontalAlignment="Stretch" />
-                                            <TextBlock Text="{Binding Path=Version, Mode=OneTime}" FontSize="12"
+                                            <TextBlock Text="{Binding Path=Version, Mode=OneTime}" FontSize="14"
                                                        Visibility="{Binding Path=Version, Mode=OneTime, Converter={StaticResource nullToCollapsedConverter}}"
                                                        Margin="0,4,0,0" HorizontalAlignment="Stretch" />
                                         </StackPanel>
@@ -62,17 +70,17 @@
                         <HierarchicalDataTemplate DataType="{x:Type coreModel:PackageReference}" ItemsSource="{Binding Path=AllReferences, Mode=OneTime}">
                             <TreeViewItem Padding="0">
                                 <TreeViewItem.Header>
-                                    <DockPanel>
+                                    <DockPanel Height="40">
                                         <Grid DockPanel.Dock="Left" VerticalAlignment="Center" Margin="0,0,8,0">
-                                            <md:PackIcon Kind="Package" Width="20" Height="20" Margin="0,8,8,8" VerticalAlignment="Center" />
+                                            <md:PackIcon Kind="Package" Width="24" Height="24" Margin="0,8,8,8" VerticalAlignment="Center" />
                                             <md:PackIcon Kind="Warning" Foreground="{StaticResource WarningYellow}"
                                                          Visibility="{Binding Path=HasPotentialVersionConflict, Mode=OneTime, Converter={StaticResource boolToVisibleConverter}}"
                                                          Width="16" Height="16" HorizontalAlignment="Right" VerticalAlignment="Bottom" />
                                         </Grid>
                                         <StackPanel Orientation="Vertical" VerticalAlignment="Center">
-                                            <TextBlock Text="{Binding Path=PackageId, Mode=OneTime}" FontSize="14"
+                                            <TextBlock Text="{Binding Path=PackageId, Mode=OneTime}" FontSize="16"
                                                        HorizontalAlignment="Stretch" />
-                                            <TextBlock Text="{Binding Path=Version, Mode=OneTime}" FontSize="12"
+                                            <TextBlock Text="{Binding Path=Version, Mode=OneTime}" FontSize="14"
                                                        Visibility="{Binding Path=Version, Mode=OneTime, Converter={StaticResource nullToCollapsedConverter}}"
                                                        Margin="0,4" HorizontalAlignment="Stretch" />
                                         </StackPanel>
@@ -180,12 +188,12 @@
                             <HierarchicalDataTemplate DataType="{x:Type coreModel:PackageWithReferencingProjects}" ItemsSource="{Binding Path=Projects, Mode=OneTime}">
                                 <TreeViewItem Padding="0">
                                     <TreeViewItem.Header>
-                                        <DockPanel>
-                                            <md:PackIcon DockPanel.Dock="Left" Kind="Package" Width="20" Height="20" Margin="0,8,16,8" VerticalAlignment="Center" />
+                                        <DockPanel Height="40">
+                                            <md:PackIcon DockPanel.Dock="Left" Kind="Package" Width="24" Height="24" Margin="0,8,16,8" VerticalAlignment="Center" />
                                             <StackPanel Orientation="Vertical" VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding Path=Package.PackageId, Mode=OneTime}" FontSize="14"
+                                                <TextBlock Text="{Binding Path=Package.PackageId, Mode=OneTime}" FontSize="16"
                                                            HorizontalAlignment="Stretch" />
-                                                <TextBlock Text="{Binding Path=Package.Version, Mode=OneTime}" FontSize="12"
+                                                <TextBlock Text="{Binding Path=Package.Version, Mode=OneTime}" FontSize="14"
                                                            Visibility="{Binding Path=Package.Version, Mode=OneTime, Converter={StaticResource nullToCollapsedConverter}}"
                                                            Margin="0,4" HorizontalAlignment="Stretch" />
                                             </StackPanel>
@@ -196,13 +204,13 @@
                             <HierarchicalDataTemplate DataType="{x:Type coreModel:ProjectReference}">
                                 <TreeViewItem Padding="0" IsExpanded="True">
                                     <TreeViewItem.Header>
-                                        <DockPanel>
-                                            <md:PackIcon DockPanel.Dock="Left" Kind="LanguageCsharp" Width="20" Height="20" VerticalAlignment="Center" />
+                                        <DockPanel Height="40">
+                                            <md:PackIcon DockPanel.Dock="Left" Kind="LanguageCsharp" Width="24" Height="24" VerticalAlignment="Center" />
                                             <StackPanel Orientation="Vertical" Margin="16,0,0,0" VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding Path=ProjectName, Mode=OneTime}" FontSize="14"
+                                                <TextBlock Text="{Binding Path=ProjectName, Mode=OneTime}" FontSize="16"
                                                            ToolTip="{Binding Path=FullFileName, Mode=OneTime}"
                                                            HorizontalAlignment="Stretch" />
-                                                <TextBlock Text="{Binding Path=Version, Mode=OneTime}" FontSize="12"
+                                                <TextBlock Text="{Binding Path=Version, Mode=OneTime}" FontSize="14"
                                                            Visibility="{Binding Path=Version, Mode=OneTime, Converter={StaticResource nullToCollapsedConverter}}"
                                                            Margin="0,4,0,0" HorizontalAlignment="Stretch" />
                                             </StackPanel>

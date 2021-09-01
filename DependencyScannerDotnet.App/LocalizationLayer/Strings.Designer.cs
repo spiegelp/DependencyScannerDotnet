@@ -88,6 +88,15 @@ namespace DependencyScannerDotnet.App.LocalizationLayer {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Export as .json file ähnelt.
+        /// </summary>
+        public static string ExportAsJsonFile {
+            get {
+                return ResourceManager.GetString("ExportAsJsonFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Import ähnelt.
         /// </summary>
         public static string Import {
