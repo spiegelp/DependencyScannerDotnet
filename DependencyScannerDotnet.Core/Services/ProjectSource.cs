@@ -19,15 +19,9 @@ namespace DependencyScannerDotnet.Core.Services
 
         protected ProjectFile ParseProjectFile(byte[] fileBytes)
         {
-            // get rid of the BOM (XML API does not like it)
-            if (fileBytes.Length > 3 && fileBytes[0] == 239 && fileBytes[1] == 187 && fileBytes[2] == 191)
-            {
-                fileBytes = fileBytes[3..];
-            }
-
             ProjectFile project = new();
 
-            string fileStr = Encoding.UTF8.GetString(fileBytes);
+            string fileStr = Encoding.UTF8.GetString(fileBytes.GetRidOfBom());
 
             XmlDocument projectXml = new();
             projectXml.LoadXml(fileStr);
