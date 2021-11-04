@@ -1,5 +1,6 @@
 ﻿using DependencyScannerDotnet.Core.Model;
 using DependencyScannerDotnet.Core.Services;
+using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -49,12 +50,36 @@ namespace DependencyScannerDotnet.Core.Test.Services
             };
 
             PackageUpgrader packageUpgrader = new();
-            projects = packageUpgrader.GetProjectsForPackageUpdate(projects, new() { PackageId = "Newtonsoft.Json" });
+            projects = packageUpgrader.GetProjectsForPackageUpdate(projects, "Newtonsoft.Json");
 
             Assert.Collection(
                 projects,
                 x => Assert.Equal("DependencyScannerDotnet.Core", x.ProjectName)
             );
+        }
+
+        [Fact]
+        public async Task GetVersionsForPackageAsync_IncludePrerelease_Ok()
+        {
+            PackageUpgrader packageUpgrader = new();
+            List<NuGetVersion> versions = await packageUpgrader.GetVersionsForPackageAsync("xunit", true).ConfigureAwait(false);
+
+            Assert.NotNull(versions);
+            Assert.Contains(versions, version => version.ToString() == "2.4.1");
+            Assert.Contains(versions, version => version.ToString() == "2.4.0-rc.2.build4045");
+            Assert.Contains(versions, version => version.ToString() == "2.3.0");
+        }
+
+        [Fact]
+        public async Task GetVersionsForPackageAsync_ExcludePrerelease_Ok()
+        {
+            PackageUpgrader packageUpgrader = new();
+            List<NuGetVersion> versions = await packageUpgrader.GetVersionsForPackageAsync("xunit", false).ConfigureAwait(false);
+
+            Assert.NotNull(versions);
+            Assert.Contains(versions, version => version.ToString() == "2.4.1");
+            Assert.DoesNotContain(versions, version => version.ToString() == "2.4.0-rc.2.build4045");
+            Assert.Contains(versions, version => version.ToString() == "2.3.0");
         }
 
         [Fact]
@@ -89,7 +114,7 @@ namespace DependencyScannerDotnet.Core.Test.Services
 </Project>";
 
             PackageUpgrader packageUpgrader = new();
-            string newCsprojStr = packageUpgrader.UpdatePackageVersionNewSdkStyleProject(csprojStr, "xunit", "2.4.1");
+            string newCsprojStr = packageUpgrader.UpdatePackageVersionNewSdkStyleProject(csprojStr, "xunit", new("2.4.1"));
 
             Assert.Equal(expectedCsprojStr, newCsprojStr);
         }
@@ -144,7 +169,7 @@ namespace DependencyScannerDotnet.Core.Test.Services
 </Project>";
 
             PackageUpgrader packageUpgrader = new();
-            string newCsprojStr = packageUpgrader.UpdatePackageVersionLegacyProject(csprojStr, "xunit", "2.4.1");
+            string newCsprojStr = packageUpgrader.UpdatePackageVersionLegacyProject(csprojStr, "xunit", new("2.4.1"));
 
             Assert.Equal(expectedCsprojStr, newCsprojStr);
         }

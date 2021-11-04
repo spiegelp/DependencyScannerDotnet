@@ -1,9 +1,14 @@
 ﻿using DependencyScannerDotnet.Core.Model;
+using NuGet.Common;
+using NuGet.Protocol;
+using NuGet.Protocol.Core.Types;
+using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 
@@ -13,32 +18,67 @@ namespace DependencyScannerDotnet.Core.Services
     {
         public PackageUpgrader() { }
 
-        public List<ProjectReference> GetProjectsForPackageUpdate(List<ProjectReference> projects, PackageReference package)
+        public List<ProjectReference> GetProjectsForPackageUpdate(List<ProjectReference> projects, string packageId)
         {
             return projects
                 .Where(project => !string.IsNullOrWhiteSpace(project.FullFileName)
                                         && File.Exists(project.FullFileName)
-                                        && project.PackageReferences.Any(packageReference => packageReference.PackageId == package.PackageId))
+                                        && project.PackageReferences.Any(packageReference => packageReference.PackageId == packageId))
                 .ToList();
         }
 
-        public async Task UpdatePackageVersionAsync(List<ProjectReference> projects, PackageReference package, string newVersion)
+        public async Task<List<NuGetVersion>> GetVersionsForPackageAsync(string packageId, bool includePrerelease)
         {
-            projects = GetProjectsForPackageUpdate(projects, package);
+            using SourceCacheContext cache = new();
+
+            List<SourceRepository> sourceRepositories = SourceRepositoriesFactory.GetSourceRepositories();
+
+            CancellationToken cancellationToken = CancellationToken.None;
+
+            foreach (SourceRepository sourceRepository in sourceRepositories)
+            {
+                FeedType feedType = await sourceRepository.GetFeedType(cancellationToken).ConfigureAwait(false);
+
+                if (feedType == FeedType.HttpV3)
+                {
+                    FindPackageByIdResource findPackageByIdResource = await sourceRepository.GetResourceAsync<FindPackageByIdResource>().ConfigureAwait(false);
+
+                    IEnumerable<NuGetVersion> versions = await findPackageByIdResource.GetAllVersionsAsync(packageId, cache, NullLogger.Instance, cancellationToken).ConfigureAwait(false);
+
+                    if (versions != null && versions.Any())
+                    {
+                        if (includePrerelease)
+                        {
+                            return versions.ToList();
+                        }
+                        else
+                        {
+                            return versions.Where(version => !version.IsPrerelease).ToList();
+                        }
+                    }
+                }
+            }
+
+            return new();
+        }
+
+        public async Task UpdatePackageVersionAsync(List<ProjectReference> projects, string packageId, NuGetVersion newVersion)
+        {
+            projects = GetProjectsForPackageUpdate(projects, packageId);
 
             foreach (ProjectReference project in projects)
             {
                 string projectXml = await ReadProjectXmlAsync(project).ConfigureAwait(false);
 
                 string newProjectXml = project.IsNewSdkStyle
-                    ? UpdatePackageVersionNewSdkStyleProject(projectXml, package.PackageId, newVersion)
-                    : UpdatePackageVersionLegacyProject(projectXml, package.PackageId, newVersion);
+                    ? UpdatePackageVersionNewSdkStyleProject(projectXml, packageId, newVersion)
+                    : UpdatePackageVersionLegacyProject(projectXml, packageId, newVersion);
 
                 await WriteProjectXmlAsync(project.FullFileName, newProjectXml).ConfigureAwait(false);
             }
         }
 
-        public string UpdatePackageVersionNewSdkStyleProject(string xmlStr, string packageId, string newVersion)
+        public string UpdatePackageVersionNewSdkStyleProject(string xmlStr, string packageId, NuGetVersion newVersion)
         {
             XmlDocument projectXml = new();
             projectXml.LoadXml(xmlStr);
@@ -48,13 +88,13 @@ namespace DependencyScannerDotnet.Core.Services
 
             foreach (XmlElement packageReferenceNode in packageReferenceNodeList)
             {
-                packageReferenceNode.SetAttribute("Version", newVersion);
+                packageReferenceNode.SetAttribute("Version", newVersion.ToString());
             }
 
             return WriteToXmlString(projectXml);
         }
 
-        public string UpdatePackageVersionLegacyProject(string xmlStr, string packageId, string newVersion)
+        public string UpdatePackageVersionLegacyProject(string xmlStr, string packageId, NuGetVersion newVersion)
         {
             XmlDocument projectXml = new();
             projectXml.LoadXml(xmlStr);
@@ -71,7 +111,7 @@ namespace DependencyScannerDotnet.Core.Services
 
                 if (versionNode != null)
                 {
-                    versionNode.InnerText = newVersion;
+                    versionNode.InnerText = newVersion.ToString();
                 }
             }
 

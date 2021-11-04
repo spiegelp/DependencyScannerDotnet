@@ -1,4 +1,5 @@
 ﻿using DependencyScannerDotnet.Core.Model;
+using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,12 +10,14 @@ namespace DependencyScannerDotnet.Core.Services
 {
     public interface IPackageUpgrader
     {
-        List<ProjectReference> GetProjectsForPackageUpdate(List<ProjectReference> projects, PackageReference package);
+        List<ProjectReference> GetProjectsForPackageUpdate(List<ProjectReference> projects, string packageId);
 
-        Task UpdatePackageVersionAsync(List<ProjectReference> projects, PackageReference package, string newVersion);
+        Task<List<NuGetVersion>> GetVersionsForPackageAsync(string packageId, bool includePrerelease);
 
-        string UpdatePackageVersionNewSdkStyleProject(string xmlStr, string packageId, string newVersion);
+        Task UpdatePackageVersionAsync(List<ProjectReference> projects, string packageId, NuGetVersion newVersion);
 
-        string UpdatePackageVersionLegacyProject(string xmlStr, string packageId, string newVersion);
+        string UpdatePackageVersionNewSdkStyleProject(string xmlStr, string packageId, NuGetVersion newVersion);
+
+        string UpdatePackageVersionLegacyProject(string xmlStr, string packageId, NuGetVersion newVersion);
     }
 }
