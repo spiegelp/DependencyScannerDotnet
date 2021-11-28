@@ -16,6 +16,60 @@ namespace DependencyScannerDotnet.Core.Test.Services
         public PackageUpgraderTest() { }
 
         [Fact]
+        public void GetPackageIdsForUpgrade_Ok()
+        {
+            List<ProjectReference> projects = new()
+            {
+                new()
+                {
+                    PackageReferences = new()
+                    {
+                        new()
+                        {
+                            PackageId = "xunit",
+                            PackageReferences = new()
+                            {
+                                new() { PackageId = "xunit.core" }
+                            }
+                        }
+                    }
+                },
+                new()
+                {
+                    PackageReferences = new()
+                    {
+                        new()
+                        {
+                            PackageId = "xunit",
+                            PackageReferences = new()
+                            {
+                                new() { PackageId = "xunit.core" }
+                            }
+                        },
+                        new()
+                        {
+                            PackageId = "NuGet.Protocol",
+                            PackageReferences = new()
+                            {
+                                new() { PackageId = "NuGet.Packaging" }
+                            }
+                        }
+                    }
+                }
+            };
+
+            PackageUpgrader packageUpgrader = new();
+            List<string> packageIds = packageUpgrader.GetPackageIdsForUpgrade(projects);
+
+            Assert.NotNull(packageIds);
+            Assert.Collection(
+                packageIds,
+                x => Assert.Equal("NuGet.Protocol", x),
+                x => Assert.Equal("xunit", x)
+            );
+        }
+
+        [Fact]
         public void GetProjectsForPackageUpdate_Ok()
         {
             int hierarchyUp = 4;
@@ -50,11 +104,11 @@ namespace DependencyScannerDotnet.Core.Test.Services
             };
 
             PackageUpgrader packageUpgrader = new();
-            projects = packageUpgrader.GetProjectsForPackageUpdate(projects, "Newtonsoft.Json");
+            List<ProjectForPackageUpdate> result = packageUpgrader.GetProjectsForPackageUpdate(projects, "Newtonsoft.Json");
 
             Assert.Collection(
-                projects,
-                x => Assert.Equal("DependencyScannerDotnet.Core", x.ProjectName)
+                result,
+                x => Assert.True(x.Project.ProjectName == "DependencyScannerDotnet.Core" && x.CurrentPackage.PackageId == "Newtonsoft.Json")
             );
         }
 

@@ -12,10 +12,13 @@ namespace DependencyScannerDotnet.Core.Model
 
         public List<ConflictPackage> ConflictPackages { get; set; }
 
-        public ScanResult(List<ProjectReference> projects, List<ConflictPackage> conflictPackages)
+        public List<string> PackageIdsForUpgrade { get; set; }
+
+        public ScanResult(List<ProjectReference> projects, List<ConflictPackage> conflictPackages, List<string> packageIdsForUpgrade)
         {
             Projects = projects;
             ConflictPackages = conflictPackages;
+            PackageIdsForUpgrade = packageIdsForUpgrade;
         }
     }
 }

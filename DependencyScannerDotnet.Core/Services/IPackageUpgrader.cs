@@ -10,7 +10,9 @@ namespace DependencyScannerDotnet.Core.Services
 {
     public interface IPackageUpgrader
     {
-        List<ProjectReference> GetProjectsForPackageUpdate(List<ProjectReference> projects, string packageId);
+        List<string> GetPackageIdsForUpgrade(List<ProjectReference> projects);
+
+        List<ProjectForPackageUpdate> GetProjectsForPackageUpdate(List<ProjectReference> projects, string packageId);
 
         Task<List<NuGetVersion>> GetVersionsForPackageAsync(string packageId, bool includePrerelease);
 

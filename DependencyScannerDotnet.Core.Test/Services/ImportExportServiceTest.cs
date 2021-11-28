@@ -27,7 +27,7 @@ namespace DependencyScannerDotnet.Core.Test.Services
             ProjectReference projectApp = new() { ProjectName = "Project.App", Version = "1.0.1", IsNewSdkStyle = true, FullFileName = @"C:\temp\Project.App\Project.App.csproj" };
             projectApp.ProjectReferences.Add(projectLib);
 
-            ScanResult scanResult = new(new List<ProjectReference> { projectApp, projectLib }, null);
+            ScanResult scanResult = new(new List<ProjectReference> { projectApp, projectLib }, null, null);
 
             ImportExportService importExportService = new();
             string json = importExportService.ExportScanResultToJson(scanResult);

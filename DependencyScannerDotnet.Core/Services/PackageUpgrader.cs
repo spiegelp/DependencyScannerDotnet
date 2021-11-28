@@ -18,12 +18,33 @@ namespace DependencyScannerDotnet.Core.Services
     {
         public PackageUpgrader() { }
 
-        public List<ProjectReference> GetProjectsForPackageUpdate(List<ProjectReference> projects, string packageId)
+        public List<string> GetPackageIdsForUpgrade(List<ProjectReference> projects)
         {
             return projects
-                .Where(project => !string.IsNullOrWhiteSpace(project.FullFileName)
-                                        && File.Exists(project.FullFileName)
-                                        && project.PackageReferences.Any(packageReference => packageReference.PackageId == packageId))
+                .SelectMany(project => project.PackageReferences.Select(package => package.PackageId))
+                .Distinct()
+                .OrderBy(packageId => packageId, StringComparer.CurrentCultureIgnoreCase)
+                .ToList();
+        }
+
+        public List<ProjectForPackageUpdate> GetProjectsForPackageUpdate(List<ProjectReference> projects, string packageId)
+        {
+            return projects
+                .Where(project => !string.IsNullOrWhiteSpace(project.FullFileName) && File.Exists(project.FullFileName))
+                .Select(project =>
+                {
+                    PackageReference package = project.PackageReferences.FirstOrDefault(packageReference => packageReference.PackageId == packageId);
+
+                    if (package != null)
+                    {
+                        return new ProjectForPackageUpdate(project, package);
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                })
+                .Where(project => project != null)
                 .ToList();
         }
 
@@ -49,11 +70,16 @@ namespace DependencyScannerDotnet.Core.Services
                     {
                         if (includePrerelease)
                         {
-                            return versions.ToList();
+                            return versions
+                                .OrderByDescending(version => version)
+                                .ToList();
                         }
                         else
                         {
-                            return versions.Where(version => !version.IsPrerelease).ToList();
+                            return versions
+                                .Where(version => !version.IsPrerelease)
+                                .OrderByDescending(version => version)
+                                .ToList();
                         }
                     }
                 }
@@ -64,7 +90,9 @@ namespace DependencyScannerDotnet.Core.Services
 
         public async Task UpdatePackageVersionAsync(List<ProjectReference> projects, string packageId, NuGetVersion newVersion)
         {
-            projects = GetProjectsForPackageUpdate(projects, packageId);
+            projects = GetProjectsForPackageUpdate(projects, packageId)
+                .Select(projectForPackageUpdate => projectForPackageUpdate.Project)
+                .ToList();
 
             foreach (ProjectReference project in projects)
             {

@@ -19,7 +19,8 @@ namespace DependencyScannerDotnet.Core.Test.Services
         {
             XUnitProjectSourceMock projectSource = new();
             TargetFrameworkMappingService targetFrameworkMappingService = new();
-            DependencyScanner dependencyScanner = new(projectSource, targetFrameworkMappingService);
+            PackageUpgrader packageUpgrader = new();
+            DependencyScanner dependencyScanner = new(projectSource, targetFrameworkMappingService, packageUpgrader);
 
             ScanResult result = await dependencyScanner.ScanDependenciesAsync(new());
 
@@ -53,7 +54,8 @@ namespace DependencyScannerDotnet.Core.Test.Services
         {
             UnknownReferenceProjectSourceMock projectSource = new();
             TargetFrameworkMappingService targetFrameworkMappingService = new();
-            DependencyScanner dependencyScanner = new(projectSource, targetFrameworkMappingService);
+            PackageUpgrader packageUpgrader = new();
+            DependencyScanner dependencyScanner = new(projectSource, targetFrameworkMappingService, packageUpgrader);
 
             ScanResult result = await dependencyScanner.ScanDependenciesAsync(new());
 
@@ -73,9 +75,9 @@ namespace DependencyScannerDotnet.Core.Test.Services
 
             List<ProjectReference> projects = new() { projectA, projectB };
 
-            ScanResult scanResult = new(projects, null);
+            ScanResult scanResult = new(projects, null, null);
 
-            DependencyScanner dependencyScanner = new(null, null);
+            DependencyScanner dependencyScanner = new(null, null, null);
 
             dependencyScanner.FindPackageVersionConflicts(scanResult, new());
 
@@ -105,9 +107,9 @@ namespace DependencyScannerDotnet.Core.Test.Services
             ProjectReference dummyProjA = new() { ProjectName = "Dummy.Proj.A", Version = "1.0.0", PackageReferences = new() { nuGetFrameworks5100 } };
             ProjectReference dummyProjB = new() { ProjectName = "Dummy.Proj.B", Version = "1.0.0", PackageReferences = new() { nuGetCommon5100, xunitCore } };
 
-            ScanResult scanResult = new(new() { dummyProjA, dummyProjB }, null);
+            ScanResult scanResult = new(new() { dummyProjA, dummyProjB }, null, null);
 
-            DependencyScanner dependencyScanner = new(null, null);
+            DependencyScanner dependencyScanner = new(null, null, null);
 
             List<PackageWithReferencingProjects> result = dependencyScanner.SearchPackagesInProjects(scanResult, "uget");
 

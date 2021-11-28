@@ -17,11 +17,13 @@ namespace DependencyScannerDotnet.Core.Services
     {
         private readonly IProjectSource m_projectSource;
         private readonly ITargetFrameworkMappingService m_targetFrameworkMappingService;
+        private readonly IPackageUpgrader m_packageUpgrader;
 
-        public DependencyScanner(IProjectSource projectSource, ITargetFrameworkMappingService targetFrameworkMappingService)
+        public DependencyScanner(IProjectSource projectSource, ITargetFrameworkMappingService targetFrameworkMappingService, IPackageUpgrader packageUpgrader)
         {
             m_projectSource = projectSource;
             m_targetFrameworkMappingService = targetFrameworkMappingService;
+            m_packageUpgrader = packageUpgrader;
         }
 
         public async Task<ScanResult> ScanDependenciesAsync(ScanOptions scanOptions)
@@ -94,9 +96,11 @@ namespace DependencyScannerDotnet.Core.Services
                 }
             }
 
-            ScanResult scanResult = new(projectsByUniqueKey.Values.ToList(), null);
+            ScanResult scanResult = new(projectsByUniqueKey.Values.ToList(), null, null);
 
             FindPackageVersionConflicts(scanResult, scanOptions);
+
+            scanResult.PackageIdsForUpgrade = m_packageUpgrader.GetPackageIdsForUpgrade(scanResult.Projects);
 
             return scanResult;
         }

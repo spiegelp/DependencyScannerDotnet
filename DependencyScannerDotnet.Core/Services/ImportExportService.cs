@@ -214,7 +214,7 @@ namespace DependencyScannerDotnet.Core.Services
                 .OrderBy(projectReference => projectReference.ProjectName.ToLower())
                 .ToList();
 
-            return new(projects, null);
+            return new(projects, null, null);
         }
 
         private JsonSerializerSettings CreateSettings()
