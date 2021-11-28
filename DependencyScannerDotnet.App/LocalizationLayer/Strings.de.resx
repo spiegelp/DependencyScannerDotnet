@@ -132,6 +132,9 @@
   <data name="ImportJsonFile" xml:space="preserve">
     <value>.json-Datei importieren</value>
   </data>
+  <data name="IncludePrereleases" xml:space="preserve">
+    <value>Prereleases einbeziehen</value>
+  </data>
   <data name="MaximumScanDepth" xml:space="preserve">
     <value>Maximale Scantiefe</value>
   </data>
@@ -170,6 +173,18 @@
   </data>
   <data name="SelectSolution" xml:space="preserve">
     <value>Solution auswählen</value>
+  </data>
+  <data name="Update" xml:space="preserve">
+    <value>Aktualisieren</value>
+  </data>
+  <data name="UpdatePackage" xml:space="preserve">
+    <value>Package aktualisieren</value>
+  </data>
+  <data name="UpdatePackages" xml:space="preserve">
+    <value>Packages aktualisieren</value>
+  </data>
+  <data name="Version" xml:space="preserve">
+    <value>Version</value>
   </data>
   <data name="VersionConflicts" xml:space="preserve">
     <value>Versionskonflikte</value>

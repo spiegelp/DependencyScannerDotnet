@@ -43,6 +43,10 @@ namespace DependencyScannerDotnet.App.GuiLayer.ViewModel
 
         public ExtendedObservableCollection<PackageWithReferencingProjects> SearchPackagesResult { get; init; }
 
+        public ICommand SelectPackageForUpgradeCommand { get; init; }
+
+        public ICommand UpdatePackageVersionCommand { get; init; }
+
         public int VersionConflictsCount
         {
             get
@@ -58,6 +62,8 @@ namespace DependencyScannerDotnet.App.GuiLayer.ViewModel
             ExportCommand = new DelegateCommand(ExportHandler);
             OpenConflictPackageCommand = new DelegateCommand<ConflictPackage>(OpenConflictPackageHandler);
             SearchPackagesCommand = new DelegateCommand<string>(SearchPackagesHandler);
+            SelectPackageForUpgradeCommand = new DelegateCommand(SelectPackageForUpgradeHandler);
+            UpdatePackageVersionCommand = new DelegateCommand<string>(UpdatePackageVersionHandler);
 
             SearchPackagesResult = new();
         }
@@ -72,8 +78,11 @@ namespace DependencyScannerDotnet.App.GuiLayer.ViewModel
             ImportExportService importExportService = new();
             ScanResult = await importExportService.ImportScanResultFromFileAsync(file).ConfigureAwait(false);
 
-            DependencyScanner dependencyScanner = new(null, null);
+            DependencyScanner dependencyScanner = new(null, null, null);
             dependencyScanner.FindPackageVersionConflicts(ScanResult, scanOptions);
+
+            PackageUpgrader packageUpgrader = new();
+            ScanResult.PackageIdsForUpgrade = packageUpgrader.GetPackageIdsForUpgrade(ScanResult.Projects);
         }
 
         public async Task InitSolutionAsync(string file, ScanOptions scanOptions)
@@ -83,13 +92,13 @@ namespace DependencyScannerDotnet.App.GuiLayer.ViewModel
 
         private async Task ScanDirectoryAsync(string directory, ScanOptions scanOptions)
         {
-            DependencyScanner dependencyScanner = new(new DirectoryProjectSource(directory), new TargetFrameworkMappingService());
+            DependencyScanner dependencyScanner = new(new DirectoryProjectSource(directory), new TargetFrameworkMappingService(), new PackageUpgrader());
             ScanResult = await dependencyScanner.ScanDependenciesAsync(scanOptions).ConfigureAwait(false);
         }
 
         private async Task ScanSolutionAsync(string solution, ScanOptions scanOptions)
         {
-            DependencyScanner dependencyScanner = new(new SolutionProjectSource(solution), new TargetFrameworkMappingService());
+            DependencyScanner dependencyScanner = new(new SolutionProjectSource(solution), new TargetFrameworkMappingService(), new PackageUpgrader());
             ScanResult = await dependencyScanner.ScanDependenciesAsync(scanOptions).ConfigureAwait(false);
         }
 
@@ -158,7 +167,7 @@ namespace DependencyScannerDotnet.App.GuiLayer.ViewModel
         {
             if (conflictPackage != null)
             {
-                WindowViewModel.OpenInRightDrawer(new ConflictPackageViewModel(conflictPackage));
+                WindowViewModel.OpenInRightDrawer(new ConflictPackageViewModel(this, conflictPackage));
             }
         }
 
@@ -170,7 +179,7 @@ namespace DependencyScannerDotnet.App.GuiLayer.ViewModel
 
                 List<PackageWithReferencingProjects> result = await Task.Run(() =>
                 {
-                    DependencyScanner dependencyScanner = new(null, null);
+                    DependencyScanner dependencyScanner = new(null, null, null);
 
                     return dependencyScanner.SearchPackagesInProjects(ScanResult, searchTerm);
                 });
@@ -181,6 +190,40 @@ namespace DependencyScannerDotnet.App.GuiLayer.ViewModel
             {
                 IsBusy = false;
             }
+        }
+
+        public void SelectPackageForUpgradeHandler()
+        {
+            if (ScanResult.PackageIdsForUpgrade != null && ScanResult.PackageIdsForUpgrade.Any())
+            {
+                WindowViewModel.OpenInRightDrawer(new SelectPackageForUpgradeViewModel(this));
+            }
+        }
+
+        public async void UpdatePackageVersionHandler(string packageId)
+        {
+            PackageUpgradeViewModel nextViewModel = null;
+
+            WindowViewModel.CloseDrawer();
+
+            try
+            {
+                IsBusy = true;
+
+                nextViewModel = await Task.Run(async () =>
+                {
+                    PackageUpgradeViewModel viewModel = new(WindowViewModel);
+                    await viewModel.InitAsync(ScanResult, packageId);
+
+                    return viewModel;
+                });
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+
+            WindowViewModel.CurrentViewModel = nextViewModel;
         }
     }
 }

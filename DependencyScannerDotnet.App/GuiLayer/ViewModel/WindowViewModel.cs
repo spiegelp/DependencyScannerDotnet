@@ -56,6 +56,14 @@ namespace DependencyScannerDotnet.App.GuiLayer.ViewModel
             IsRightDrawerOpen = true;
         }
 
+        public void CloseDrawer()
+        {
+            if (IsRightDrawerOpen)
+            {
+                IsRightDrawerOpen = false;
+            }
+        }
+
         public void DrawerClosingHandler(object sender, MaterialDesignThemes.Wpf.DrawerClosingEventArgs args)
         {
             RightDrawerContent = null;

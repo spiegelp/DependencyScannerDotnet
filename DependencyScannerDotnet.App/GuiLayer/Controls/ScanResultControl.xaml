@@ -31,6 +31,14 @@
                 <md:PopupBox x:Name="menuPopupButton" Foreground="{DynamicResource PrimaryHueMidForegroundBrush}" PlacementMode="BottomAndAlignRightEdges" Margin="8,0">
                     <Border Padding="0,8">
                         <StackPanel Orientation="Vertical">
+                            <Button Style="{StaticResource PopupMenuButtonStyle}" ToolTip="{x:Static localization:Strings.UpdatePackages}"
+                                    Command="{Binding Path=SelectPackageForUpgradeCommand}">
+                                <DockPanel>
+                                    <md:PackIcon DockPanel.Dock="Left" Kind="PackageUp" Width="24" Height="24" Foreground="{DynamicResource MaterialDesignBodyLight}"
+                                                 Margin="24,0,20,0" VerticalAlignment="Center" />
+                                    <TextBlock Text="{x:Static localization:Strings.UpdatePackages}" FontSize="16" Margin="0,0,24,0" VerticalAlignment="Center" />
+                                </DockPanel>
+                            </Button>
                             <Button Style="{StaticResource PopupMenuButtonStyle}" ToolTip="{x:Static localization:Strings.ExportAsJsonFile}"
                                     Command="{Binding Path=ExportCommand}">
                                 <DockPanel>
@@ -114,8 +122,8 @@
                                    Visibility="{Binding Path=ScanResult.ConflictPackages, Mode=OneTime, Converter={StaticResource notEmptyToCollapsedConverter}}"
                                    Margin="0,40,0,0" HorizontalAlignment="Center" VerticalAlignment="Top"/>
                         <ItemsControl ItemsSource="{Binding Path=ScanResult.ConflictPackages, Mode=OneTime}"
-                                  Visibility="{Binding Path=ScanResult.ConflictPackages, Mode=OneTime, Converter={StaticResource notEmptyToVisibleConverter}}"
-                                  Padding="0,8" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                                      Visibility="{Binding Path=ScanResult.ConflictPackages, Mode=OneTime, Converter={StaticResource notEmptyToVisibleConverter}}"
+                                      Padding="0,8" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <StackPanel IsItemsHost="True" Orientation="Vertical" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />

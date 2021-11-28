@@ -3,6 +3,10 @@
                     xmlns:controls="clr-namespace:DependencyScannerDotnet.App.GuiLayer.Controls"
                     xmlns:viewModel="clr-namespace:DependencyScannerDotnet.App.GuiLayer.ViewModel">
 
+    <DataTemplate DataType="{x:Type viewModel:PackageUpgradeViewModel}">
+        <controls:PackageUpgradeControl />
+    </DataTemplate>
+    
     <DataTemplate DataType="{x:Type viewModel:ScanResultViewModel}">
         <controls:ScanResultControl />
     </DataTemplate>

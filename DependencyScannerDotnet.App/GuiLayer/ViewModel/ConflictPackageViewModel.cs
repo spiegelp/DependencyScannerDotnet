@@ -11,9 +11,21 @@ namespace DependencyScannerDotnet.App.GuiLayer.ViewModel
     {
         public ConflictPackage ConflictPackage { get; init; }
 
-        public ConflictPackageViewModel(ConflictPackage conflictPackage)
+        public ScanResultViewModel ScanResultViewModel { get; init; }
+
+        public bool Upgradeable
+        {
+            get
+            {
+                return ScanResultViewModel.ScanResult.PackageIdsForUpgrade != null
+                    && ScanResultViewModel.ScanResult.PackageIdsForUpgrade.Any(packageId => packageId == ConflictPackage.PackageId);
+            }
+        }
+
+        public ConflictPackageViewModel(ScanResultViewModel scanResultViewModel, ConflictPackage conflictPackage)
             : base()
         {
+            ScanResultViewModel = scanResultViewModel;
             ConflictPackage = conflictPackage;
         }
     }

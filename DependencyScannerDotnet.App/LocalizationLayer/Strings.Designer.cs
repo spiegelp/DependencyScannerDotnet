@@ -115,6 +115,15 @@ namespace DependencyScannerDotnet.App.LocalizationLayer {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Include prereleases ähnelt.
+        /// </summary>
+        public static string IncludePrereleases {
+            get {
+                return ResourceManager.GetString("IncludePrereleases", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Maximum scan depth ähnelt.
         /// </summary>
         public static string MaximumScanDepth {
@@ -228,6 +237,42 @@ namespace DependencyScannerDotnet.App.LocalizationLayer {
         public static string SelectSolution {
             get {
                 return ResourceManager.GetString("SelectSolution", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Update ähnelt.
+        /// </summary>
+        public static string Update {
+            get {
+                return ResourceManager.GetString("Update", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Update package ähnelt.
+        /// </summary>
+        public static string UpdatePackage {
+            get {
+                return ResourceManager.GetString("UpdatePackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Update packages ähnelt.
+        /// </summary>
+        public static string UpdatePackages {
+            get {
+                return ResourceManager.GetString("UpdatePackages", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Version ähnelt.
+        /// </summary>
+        public static string Version {
+            get {
+                return ResourceManager.GetString("Version", resourceCulture);
             }
         }
         
